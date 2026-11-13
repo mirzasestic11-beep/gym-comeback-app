@@ -4,10 +4,47 @@
 <title>Gym Comeback</title>
 <link rel="stylesheet" href="styles.css">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#070d1f">
+<meta name="theme-color" content="#050817">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-</head><body><main>
+</head><body>
+<!-- Opening power-up animation (intro.js). Removes itself after ~2.5 s, tap to skip. -->
+<div id="intro" class="go" role="presentation">
+ <div class="stage"><svg viewBox="0 0 300 300" aria-hidden="true">
+  <defs>
+   <radialGradient id="iab" cx="50%" cy="60%" r="50%"><stop offset="0" stop-color="#4aa8ff" stop-opacity=".7"/><stop offset="1" stop-color="#4aa8ff" stop-opacity="0"/></radialGradient>
+   <radialGradient id="iag" cx="50%" cy="60%" r="50%"><stop offset="0" stop-color="#ffd23f" stop-opacity=".85"/><stop offset=".6" stop-color="#ffb627" stop-opacity=".35"/><stop offset="1" stop-color="#ffb627" stop-opacity="0"/></radialGradient>
+   <linearGradient id="ihg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f0a417"/><stop offset=".55" stop-color="#ffd84a"/><stop offset="1" stop-color="#fffbe2"/></linearGradient>
+   <filter id="ibl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>
+  <path class="au blue" fill="url(#iab)" d="M40 300 C20 220 50 170 80 140 C82 168 92 176 100 170 C94 110 118 60 150 20 C182 60 206 110 200 170 C208 176 218 168 220 140 C250 170 280 220 260 300Z"/>
+  <path class="au gold" fill="url(#iag)" d="M30 300 C8 210 44 150 76 120 C78 150 90 160 100 152 C92 92 116 40 150 0 C184 40 208 92 200 152 C210 160 222 150 224 120 C256 150 292 210 270 300Z"/>
+  <g fill="#fff3b0"><circle class="sp" cx="70" cy="250" r="2.5" style="animation-delay:.6s"/><circle class="sp" cx="230" cy="240" r="2" style="animation-delay:.8s"/><circle class="sp" cx="110" cy="270" r="2" style="animation-delay:1s"/><circle class="sp" cx="200" cy="270" r="2.5" style="animation-delay:.7s"/><circle class="sp" cx="150" cy="280" r="2" style="animation-delay:1.1s"/></g>
+  <g class="who">
+   <path fill="#0b1030" d="M120 214 L180 214 L184 238 C220 242 252 254 268 276 L276 300 L24 300 L32 276 C48 254 80 242 116 238Z"/>
+   <path fill="#e9edf8" d="M100 262 L200 262 L196 300 L104 300Z"/>
+   <path fill="#2b52d6" d="M126 240 L150 258 L174 240 L170 230 C160 236 140 236 130 230Z"/>
+   <path fill="#f5c542" d="M122 248 C98 236 60 240 46 264 C40 276 46 286 60 285 C80 283 104 276 122 268Z"/>
+   <path fill="#f5c542" d="M178 248 C202 236 240 240 254 264 C260 276 254 286 240 285 C220 283 196 276 178 268Z"/>
+   <path fill="#0b1030" stroke="#ffd23f" stroke-opacity=".5" stroke-width="2" d="M150 112 C178 112 194 132 193 160 C192 190 174 214 150 216 C126 214 108 190 107 160 C106 132 122 112 150 112Z"/>
+   <rect x="152" y="146" width="40" height="28" rx="4" fill="#cfd6ee"/>
+   <rect class="lens" x="155" y="149" width="34" height="22" rx="3"/>
+   <rect x="192" y="140" width="12" height="40" rx="2" fill="#cfd6ee"/>
+   <rect x="195" y="146" width="6" height="10" fill="#2b52d6"/>
+   <path d="M118 162 L138 166" stroke="#bfefff" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <g class="hair">
+   <path class="hairglow" fill="#ffd23f" filter="url(#ibl)" d="M104 150 C98 122 104 100 120 88 L108 66 L132 76 L134 48 L152 70 L166 44 L174 72 L196 58 L192 86 C204 98 206 124 196 150 C190 128 176 116 150 114 C124 116 110 128 104 150Z"/>
+   <path class="h1" d="M104 150 C98 122 104 100 120 88 L108 66 L132 76 L134 48 L152 70 L166 44 L174 72 L196 58 L192 86 C204 98 206 124 196 150 C190 128 176 116 150 114 C124 116 110 128 104 150Z"/>
+   <path class="h2" fill="url(#ihg)" d="M104 150 C98 122 104 100 120 88 L108 66 L132 76 L134 48 L152 70 L166 44 L174 72 L196 58 L192 86 C204 98 206 124 196 150 C190 128 176 116 150 114 C124 116 110 128 104 150Z"/>
+  </g>
+ </svg></div>
+ <div class="read">POWER LEVEL<b id="ipw">0</b></div>
+ <div class="msg">Power-up complete</div>
+ <div class="flash"></div>
+ <div class="skip">tap to skip</div>
+</div>
+<main>
 <div class="hero"><div class="aura"></div>
 <svg class="flames" viewBox="0 0 260 120" aria-hidden="true"><defs><linearGradient id="flg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="var(--aura)" stop-opacity=".5"/><stop offset=".75" stop-color="var(--aura)" stop-opacity=".1"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
 <g class="fl1" fill="url(#flg)"><path d="M55 120 C49 92 61 70 71 40 C75 66 85 74 89 58 C93 34 107 22 111 0 C119 26 123 44 131 30 C137 14 143 8 149 0 C151 26 163 40 169 58 C175 44 185 40 189 26 C195 52 209 78 203 120Z"/></g>
@@ -62,6 +99,7 @@
 <p class="small">Not medical advice. If the wrist hurts sharply or keeps getting worse, stop and see a doctor or physio.</p>
 </main>
 <div id="rest" hidden></div>
+<script src="intro.js"></script>
 <script src="plan.js"></script>
 <script src="library.js"></script>
 <script src="prince.js"></script>

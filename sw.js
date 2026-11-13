@@ -12,10 +12,11 @@
 // When you add a new file to the app, add it to FILES below.
 // Changing VERSION makes phones throw away the old saved copy.
 
-var VERSION = "gc-v7";
+var VERSION = "gc-v8";
 var FILES = [
   "./",
   "index.html",
+  "intro.js",
   "styles.css",
   "plan.js",
   "library.js",
@@ -34,6 +35,7 @@ var FILES = [
   "icons/icon.svg",
   "icons/icon-192.png",
   "icons/icon-512.png",
+  "icons/icon-maskable-192.png",
   "icons/icon-maskable-512.png",
   "icons/apple-touch-icon.png",
 ];

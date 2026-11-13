@@ -1900,3 +1900,199 @@ body.pr {
 .pr .donebar .dsum {
   color: var(--gold);
 }
+
+/* ---- Opening power-up animation (intro.js) ----
+   The timing lives here, so the intro always ends by itself (~2.5 s),
+   even if a script fails. Tap to skip. */
+#intro {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 45%, #10194a, #050817 70%);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: introOut 0.45s ease-in 2.15s forwards;
+}
+#intro.out {
+  animation: introOut 0.35s ease-in forwards;
+}
+#intro .stage {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  animation: introShake 0.35s linear 1.55s 2;
+}
+#intro svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+#intro .au {
+  opacity: 0;
+  transform-origin: 150px 260px;
+}
+#intro .au.blue {
+  animation:
+    introAura 0.5s ease-out 0.35s forwards,
+    introFlick 0.18s ease-in-out 0.85s infinite alternate;
+}
+#intro .au.gold {
+  animation:
+    introAura 0.35s ease-out 1.2s forwards,
+    introFlick 0.14s ease-in-out 1.55s infinite alternate;
+}
+#intro .who {
+  opacity: 0;
+  animation: introFade 0.35s ease-out forwards;
+}
+#intro .lens {
+  fill: #0d3a25;
+  animation: introLens 0.3s ease-out 0.25s forwards;
+}
+#intro .hair {
+  transform-origin: 150px 120px;
+  animation: introLift 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) 1.2s forwards;
+}
+#intro .h1 {
+  fill: #191b38;
+}
+#intro .h2,
+#intro .hairglow {
+  opacity: 0;
+  animation: introFade 0.3s ease-out 1.2s forwards;
+}
+#intro .sp {
+  opacity: 0;
+  animation: introRise 0.9s ease-out infinite;
+}
+#intro .read {
+  margin-top: 14px;
+  text-align: center;
+  font: 700 13px "Chakra Petch", monospace;
+  letter-spacing: 3px;
+  color: #3dff95;
+  text-shadow: 0 0 8px #3dff95;
+  opacity: 0;
+  animation: introFade 0.3s ease-out 0.3s forwards;
+}
+#intro .read b {
+  display: block;
+  font-size: 34px;
+  letter-spacing: 2px;
+}
+#intro .msg {
+  margin-top: 6px;
+  font: 400 15px "Russo One", sans-serif;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #ffd75e;
+  text-shadow: 0 0 12px #ff9d00;
+  opacity: 0;
+  animation: introFade 0.25s ease-out 1.35s forwards;
+}
+#intro .skip {
+  position: absolute;
+  bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+  font: 12px system-ui, sans-serif;
+  letter-spacing: 1px;
+  color: #6c7aa8;
+}
+#intro .flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 42%, #fff 0, #fff6c8 25%, rgba(255, 200, 61, 0.6) 45%, transparent 70%);
+  animation: introFlash 0.5s ease-out 1.6s forwards;
+}
+@keyframes introFade {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes introLens {
+  to {
+    fill: #3dff95;
+  }
+}
+@keyframes introAura {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes introFlick {
+  from {
+    transform: scaleY(0.96) scaleX(1.03);
+  }
+  to {
+    transform: scaleY(1.06) scaleX(0.98);
+  }
+}
+@keyframes introLift {
+  to {
+    transform: translateY(-10px) scaleY(1.14);
+  }
+}
+@keyframes introRise {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-120px);
+  }
+}
+@keyframes introShake {
+  0%,
+  100% {
+    transform: none;
+  }
+  25% {
+    transform: translate(-4px, 2px);
+  }
+  50% {
+    transform: translate(4px, -2px);
+  }
+  75% {
+    transform: translate(-3px, -2px);
+  }
+}
+@keyframes introFlash {
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes introOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+/* "Reduce motion" on the phone: no power-up, just a quick fade */
+@media (prefers-reduced-motion: reduce) {
+  #intro {
+    animation: introOut 0.3s ease-in 0.25s forwards !important;
+  }
+  #intro .who,
+  #intro .read {
+    opacity: 1;
+  }
+}
