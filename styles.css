@@ -1902,8 +1902,10 @@ body.pr {
 }
 
 /* ---- Opening power-up animation (intro.js) ----
-   The timing lives here, so the intro always ends by itself (~2.5 s),
-   even if a script fails. Tap to skip. */
+   The screen stays solid dark until the app has loaded; intro.js then adds
+   "go" to start the power-up and removes the intro when it's done.
+   Only opacity and transform are animated, so phones can keep it smooth.
+   Safety net: if the script never runs, the intro hides itself after 6 s. */
 #intro {
   position: fixed;
   inset: 0;
@@ -1912,66 +1914,87 @@ body.pr {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at 50% 45%, #10194a, #050817 70%);
+  background: radial-gradient(ellipse at 50% 42%, #10194a, #050817 70%);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  animation: introOut 0.45s ease-in 2.15s forwards;
+  animation: introOut 0.4s ease-in 6s forwards;
 }
 #intro.out {
   animation: introOut 0.35s ease-in forwards;
 }
-#intro .stage {
+#intro .istage {
   position: relative;
   width: 280px;
   height: 280px;
-  animation: introShake 0.35s linear 1.55s 2;
 }
-#intro svg {
+#intro .ifig,
+#intro .iaura,
+#intro .ilens,
+#intro .ispk,
+#intro .iflash,
+#intro .iread,
+#intro .imsg {
+  will-change: opacity, transform;
+}
+#intro .ifig {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   overflow: visible;
 }
-#intro .au {
+#intro .ifig.dark {
   opacity: 0;
-  transform-origin: 150px 260px;
 }
-#intro .au.blue {
-  animation:
-    introAura 0.5s ease-out 0.35s forwards,
-    introFlick 0.18s ease-in-out 0.85s infinite alternate;
-}
-#intro .au.gold {
-  animation:
-    introAura 0.35s ease-out 1.2s forwards,
-    introFlick 0.14s ease-in-out 1.55s infinite alternate;
-}
-#intro .who {
+#intro .ifig.gold {
   opacity: 0;
-  animation: introFade 0.35s ease-out forwards;
 }
-#intro .lens {
-  fill: #0d3a25;
-  animation: introLens 0.3s ease-out 0.25s forwards;
-}
-#intro .hair {
-  transform-origin: 150px 120px;
-  animation: introLift 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) 1.2s forwards;
-}
-#intro .h1 {
-  fill: #191b38;
-}
-#intro .h2,
-#intro .hairglow {
+#intro .iaura {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 0;
+  bottom: -10px;
+  border-radius: 50% 50% 46% 46% / 62% 62% 38% 38%;
   opacity: 0;
-  animation: introFade 0.3s ease-out 1.2s forwards;
+  transform: scale(0.6);
+  transform-origin: 50% 90%;
 }
-#intro .sp {
+#intro .iaura.blue {
+  background: radial-gradient(ellipse 50% 55% at 50% 62%, rgba(74, 168, 255, 0.75), rgba(74, 168, 255, 0) 70%);
+}
+#intro .iaura.gold {
+  left: -6px;
+  right: -6px;
+  top: -24px;
+  background: radial-gradient(ellipse 50% 55% at 50% 60%, rgba(255, 226, 120, 0.9), rgba(255, 182, 39, 0.35) 45%, rgba(255, 182, 39, 0) 70%);
+}
+#intro .ilens {
+  position: absolute;
+  left: 144px;
+  top: 139px;
+  width: 32px;
+  height: 21px;
+  border-radius: 3px;
+  background: #3dff95;
+  box-shadow: 0 0 12px #3dff95;
   opacity: 0;
-  animation: introRise 0.9s ease-out infinite;
 }
-#intro .read {
+#intro .ispk {
+  position: absolute;
+  bottom: 30px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff3b0;
+  opacity: 0;
+}
+#intro .s1 { left: 60px; }
+#intro .s2 { left: 214px; bottom: 44px; }
+#intro .s3 { left: 104px; bottom: 16px; }
+#intro .s4 { left: 186px; bottom: 18px; }
+#intro .s5 { left: 140px; bottom: 6px; }
+#intro .iread {
   margin-top: 14px;
   text-align: center;
   font: 700 13px "Chakra Petch", monospace;
@@ -1979,14 +2002,15 @@ body.pr {
   color: #3dff95;
   text-shadow: 0 0 8px #3dff95;
   opacity: 0;
-  animation: introFade 0.3s ease-out 0.3s forwards;
 }
-#intro .read b {
+#intro .iread b {
   display: block;
+  min-width: 6ch;
   font-size: 34px;
   letter-spacing: 2px;
+  font-variant-numeric: tabular-nums;
 }
-#intro .msg {
+#intro .imsg {
   margin-top: 6px;
   font: 400 15px "Russo One", sans-serif;
   letter-spacing: 3px;
@@ -1994,105 +2018,75 @@ body.pr {
   color: #ffd75e;
   text-shadow: 0 0 12px #ff9d00;
   opacity: 0;
-  animation: introFade 0.25s ease-out 1.35s forwards;
 }
-#intro .skip {
+#intro .iskip {
   position: absolute;
   bottom: calc(22px + env(safe-area-inset-bottom, 0px));
   font: 12px system-ui, sans-serif;
   letter-spacing: 1px;
   color: #6c7aa8;
 }
-#intro .flash {
+#intro .iflash {
   position: absolute;
   inset: 0;
   pointer-events: none;
   opacity: 0;
   background: radial-gradient(circle at 50% 42%, #fff 0, #fff6c8 25%, rgba(255, 200, 61, 0.6) 45%, transparent 70%);
-  animation: introFlash 0.5s ease-out 1.6s forwards;
 }
-@keyframes introFade {
-  to {
-    opacity: 1;
-  }
+/* ---- timeline (starts when intro.js adds "go") ---- */
+#intro.go .ifig.dark { animation: introIn 0.4s ease-out forwards; }
+#intro.go .ilens { animation: introFade 0.25s ease-out 0.35s forwards; }
+#intro.go .iread { animation: introFade 0.3s ease-out 0.35s forwards; }
+#intro.go .iaura.blue {
+  animation: introAura 0.5s ease-out 0.45s forwards, introFlick 0.2s ease-in-out 0.95s infinite alternate;
 }
-@keyframes introLens {
-  to {
-    fill: #3dff95;
-  }
+#intro.go .ispk { animation: introRise 0.9s ease-out 0.6s infinite; }
+#intro.go .s2 { animation-delay: 0.8s; }
+#intro.go .s3 { animation-delay: 1s; }
+#intro.go .s4 { animation-delay: 0.7s; }
+#intro.go .s5 { animation-delay: 1.1s; }
+#intro.go .ifig.gold { animation: introGold 0.4s ease-out 1.55s forwards; }
+#intro.go .iaura.gold {
+  animation: introAura 0.4s ease-out 1.55s forwards, introFlick 0.15s ease-in-out 1.95s infinite alternate;
+}
+#intro.go .imsg { animation: introFade 0.3s ease-out 1.8s forwards; }
+#intro.go .istage { animation: introShake 0.3s linear 2s 2; }
+#intro.go .iflash { animation: introFlash 0.55s ease-out 2s forwards; }
+@keyframes introFade { to { opacity: 1; } }
+@keyframes introIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes introGold {
+  from { opacity: 0; transform: none; }
+  to { opacity: 1; transform: translateY(-3px) scale(1.02); }
 }
 @keyframes introAura {
-  from {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
 }
 @keyframes introFlick {
-  from {
-    transform: scaleY(0.96) scaleX(1.03);
-  }
-  to {
-    transform: scaleY(1.06) scaleX(0.98);
-  }
-}
-@keyframes introLift {
-  to {
-    transform: translateY(-10px) scaleY(1.14);
-  }
+  from { transform: scale(0.97, 1.03); }
+  to { transform: scale(1.03, 0.97); }
 }
 @keyframes introRise {
-  0% {
-    opacity: 0;
-    transform: translateY(0);
-  }
-  20% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-120px);
-  }
+  0% { opacity: 0; transform: translateY(0); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-140px); }
 }
 @keyframes introShake {
-  0%,
-  100% {
-    transform: none;
-  }
-  25% {
-    transform: translate(-4px, 2px);
-  }
-  50% {
-    transform: translate(4px, -2px);
-  }
-  75% {
-    transform: translate(-3px, -2px);
-  }
+  0%, 100% { transform: none; }
+  25% { transform: translate(-4px, 2px); }
+  50% { transform: translate(4px, -2px); }
+  75% { transform: translate(-3px, -2px); }
 }
 @keyframes introFlash {
-  30% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
+  30% { opacity: 1; }
+  100% { opacity: 0; }
 }
-@keyframes introOut {
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-/* "Reduce motion" on the phone: no power-up, just a quick fade */
+@keyframes introOut { to { opacity: 0; visibility: hidden; } }
+/* "Reduce motion": no power-up, the finished warrior and a quick fade */
 @media (prefers-reduced-motion: reduce) {
-  #intro {
-    animation: introOut 0.3s ease-in 0.25s forwards !important;
-  }
-  #intro .who,
-  #intro .read {
-    opacity: 1;
-  }
+  #intro .ifig.gold, #intro .iread, #intro .ilens { opacity: 1; }
+  #intro.go * { animation: none !important; }
 }
