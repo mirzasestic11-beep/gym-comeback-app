@@ -1725,3 +1725,178 @@ body.pr {
   color: #04140b;
   font-weight: 700;
 }
+
+/* ---- Orbs in the header (all Saiyan-style looks): one straight row ---- */
+.sy .balls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+.balls .orb {
+  display: block;
+  width: 36px;
+  height: 36px;
+  flex: none;
+}
+.balls .orb svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.balls .orb.on svg {
+  filter: drop-shadow(0 0 6px rgba(255, 170, 40, 0.75));
+  animation: orbglow 2.6s ease-in-out infinite;
+}
+.balls .orb:not(.on) {
+  opacity: 0.75;
+}
+@keyframes orbglow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px rgba(255, 170, 40, 0.55));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(255, 190, 60, 0.95));
+  }
+}
+.balls .sh {
+  flex-basis: 100%;
+}
+
+/* ---- Finished cards: folded into one "DONE" row (all looks) ---- */
+.card.closed > :not(.donebar) {
+  display: none !important;
+}
+.card.closed {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  background: var(--bg);
+  border-color: var(--bd);
+}
+.donebar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.card.opened .donebar {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--bd);
+}
+.donebar .dchk {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--ac);
+  color: #fff;
+  font-size: 26px;
+  font-weight: 800;
+}
+.card.opened .donebar .dchk {
+  width: 32px;
+  height: 32px;
+  font-size: 18px;
+}
+.donebar .dtx {
+  flex: 1;
+  min-width: 0;
+}
+.donebar .dtx b {
+  display: block;
+  font-size: 17px;
+  color: var(--mu);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card.opened .donebar .dtx b {
+  text-decoration: none;
+  font-size: 14px;
+}
+.donebar .dsum {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--ac);
+}
+.donebar .dedit {
+  flex: none;
+  min-width: 0;
+  padding: 8px 14px;
+}
+/* stamp animation the moment a card is finished */
+.card.stamp .dchk {
+  animation: stampin 0.6s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+.card.stamp .donebar {
+  animation: donein 0.5s ease-out;
+}
+@keyframes stampin {
+  0% {
+    transform: scale(2.4) rotate(-25deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.9) rotate(4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes donein {
+  from {
+    opacity: 0.2;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* Saiyan look */
+.sy .card.closed {
+  background: rgba(7, 13, 31, 0.85);
+  box-shadow: none;
+}
+.sy .donebar .dchk {
+  background: linear-gradient(180deg, #ffe07a, #ffc83d 55%, #c98a12);
+  color: #1a1200;
+  box-shadow: 0 0 14px rgba(255, 200, 61, 0.55);
+}
+/* Prince look: gold hexagon badge, muted armour */
+.pr .card.closed {
+  --frame: linear-gradient(160deg, #5b647f, #3a4260 50%, #6b5a2a);
+}
+.pr .card.closed::after {
+  background: linear-gradient(180deg, #10152e, #0a0e24);
+}
+.pr .donebar .dchk {
+  border-radius: 0;
+  width: 46px;
+  height: 52px;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background: linear-gradient(180deg, #ffe07a, var(--gold) 55%, var(--gold2));
+  color: #2a1700;
+  box-shadow: none;
+}
+.pr .card.opened .donebar .dchk {
+  width: 32px;
+  height: 36px;
+}
+.pr .donebar .dtx b {
+  font-family: "Russo One", sans-serif;
+  text-transform: uppercase;
+}
+.pr .donebar .dsum {
+  color: var(--gold);
+}

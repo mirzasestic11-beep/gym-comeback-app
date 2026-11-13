@@ -233,6 +233,128 @@ var VQ = [
   "Push past your limit, then push again.",
   "Surpass the you of last week.",
 ];
+// One glass orb as a small drawing: amber glass with an inner glow, a light
+// reflection and n sparkle marks in a neat pattern. Not yet collected = dark glass.
+var ORB_PIPS = [
+  [[20, 20]],
+  [
+    [15, 15],
+    [25, 25],
+  ],
+  [
+    [20, 13],
+    [14, 24],
+    [26, 24],
+  ],
+  [
+    [14, 14],
+    [26, 14],
+    [14, 26],
+    [26, 26],
+  ],
+  [
+    [14, 14],
+    [26, 14],
+    [20, 20],
+    [14, 26],
+    [26, 26],
+  ],
+  [
+    [14, 12],
+    [26, 12],
+    [14, 20],
+    [26, 20],
+    [14, 28],
+    [26, 28],
+  ],
+  [
+    [20, 11],
+    [28, 15.5],
+    [28, 24.5],
+    [20, 29],
+    [12, 24.5],
+    [12, 15.5],
+    [20, 20],
+  ],
+];
+function orbSVG(n, on) {
+  var id = "o" + n + (on ? "a" : "b"),
+    r = n > 5 ? 3.6 : 4.4, // sparkle size
+    pip = "";
+  ORB_PIPS[n - 1].forEach(function (p) {
+    var x = p[0],
+      y = p[1];
+    // four-point sparkle
+    pip +=
+      "<path d='M" +
+      x +
+      " " +
+      (y - r) +
+      " Q" +
+      x +
+      " " +
+      y +
+      " " +
+      (x + r) +
+      " " +
+      y +
+      " Q" +
+      x +
+      " " +
+      y +
+      " " +
+      x +
+      " " +
+      (y + r) +
+      " Q" +
+      x +
+      " " +
+      y +
+      " " +
+      (x - r) +
+      " " +
+      y +
+      " Q" +
+      x +
+      " " +
+      y +
+      " " +
+      x +
+      " " +
+      (y - r) +
+      "Z'/>";
+  });
+  var glass = on
+    ? "<stop offset='0' stop-color='#fff2c2'/><stop offset='.28' stop-color='#ffc444'/><stop offset='.72' stop-color='#ee8410'/><stop offset='1' stop-color='#9c4300'/>"
+    : "<stop offset='0' stop-color='#5b6488'/><stop offset='.5' stop-color='#2a3157'/><stop offset='1' stop-color='#141833'/>";
+  // Marks: dark mahogany with a thin light edge, so they stay easy to count
+  // against both the amber glass and the white shine.
+  var marks = on
+    ? "fill='#6e1d00' stroke='#fff3cf' stroke-width='.7' stroke-linejoin='round'"
+    : "fill='#9aa3c7' fill-opacity='.55'";
+  return (
+    "<svg viewBox='0 0 40 40' aria-hidden='true'><defs><radialGradient id='" +
+    id +
+    "' cx='38%' cy='32%' r='70%'>" +
+    glass +
+    "</radialGradient></defs>" +
+    "<circle cx='20' cy='20' r='18.5' fill='url(#" +
+    id +
+    ")'/>" +
+    "<circle cx='20' cy='20' r='18' fill='none' stroke='" +
+    (on ? "#ffe3a0" : "#7a84ad") +
+    "' stroke-opacity='.55' stroke-width='1'/>" +
+    "<g " +
+    marks +
+    ">" +
+    pip +
+    "</g>" +
+    // small shine up at the top-left edge, clear of the marks
+    "<ellipse cx='10.5' cy='8.8' rx='4.2' ry='2.2' transform='rotate(-40 10.5 8.8)' fill='#fff' fill-opacity='" +
+    (on ? ".8" : ".3") +
+    "'/></svg>"
+  );
+}
 function balls() {
   var el = document.getElementById("balls"),
     vq = document.getElementById("vq");
@@ -242,8 +364,13 @@ function balls() {
   el.innerHTML = "";
   for (var i = 0; i < 7; i++) {
     var b = document.createElement("span");
-    b.className = "db" + (i < n ? " on" : "");
-    b.textContent = "★".repeat(i + 1);
+    b.className = "orb" + (i < n ? " on" : "");
+    b.setAttribute("role", "img");
+    b.setAttribute(
+      "aria-label",
+      "Orb " + (i + 1) + (i < n ? ", collected" : ", not collected yet"),
+    );
+    b.innerHTML = orbSVG(i + 1, i < n);
     el.appendChild(b);
   }
   if (n >= 7) {
@@ -253,20 +380,43 @@ function balls() {
     el.appendChild(s);
   }
 }
-function doneOv(el, key, on) {
+// Finished cards fold into one short "DONE" row: big check, name and a
+// summary. The input boxes are hidden, so nothing can be typed into a
+// finished exercise by accident. "Edit" unfolds it; "Close" folds it again.
+var OPEN = {}; // finished cards you've unfolded to edit
+function doneBar(el, key, title, summary) {
+  var open = !!OPEN[key];
+  el.classList.add(open ? "opened" : "closed");
+  var d = document.createElement("div");
+  d.className = "donebar";
+  d.innerHTML =
+    "<span class='dchk' aria-hidden='true'>✓</span><div class='dtx'><b></b><span class='dsum'></span></div>";
+  d.querySelector("b").textContent = open ? "Finished · editing" : title;
+  d.querySelector(".dsum").textContent = (open ? "" : "DONE · ") + summary;
+  var bt = document.createElement("button");
+  bt.className = "pill dedit";
+  bt.textContent = open ? "Close" : "Edit";
+  bt.setAttribute("aria-label", (open ? "Close " : "Edit ") + title);
+  bt.onclick = function () {
+    if (open) delete OPEN[key];
+    else OPEN[key] = 1;
+    render();
+  };
+  d.appendChild(bt);
+  el.insertBefore(d, el.firstChild);
+}
+function doneOv(el, key, on, title, summary) {
   if (!on) {
     delete FIN[key];
+    delete OPEN[key];
     return;
   }
   el.classList.add("fin");
   if (!FIN[key]) {
     FIN[key] = 1;
-    if (!first) el.classList.add("pop");
+    if (!first) el.classList.add("pop", "stamp");
   }
-  var o = document.createElement("div");
-  o.className = "ov";
-  o.textContent = "Completed";
-  el.appendChild(o);
+  doneBar(el, key, title, summary);
 }
 var EF = false;
 try {
@@ -645,7 +795,7 @@ function render() {
   };
   w.appendChild(mkTr("warm", 20, 9, 5.5));
   w.appendChild(wb);
-  doneOv(w, "w" + W + D, wd);
+  doneOv(w, "w" + W + D, wd, "Warm-up walk", trs(g("warm"), 20, 9, 5.5));
   L.appendChild(w);
   var tot = 1,
     done = wd ? 1 : 0;
@@ -765,13 +915,15 @@ function render() {
       c.classList.add("fin");
       if (!FIN[e.id + "_" + W + "_" + D]) {
         FIN[e.id + "_" + W + "_" + D] = 1;
-        if (!first) c.classList.add("pop");
+        if (!first) c.classList.add("pop", "stamp");
       }
-      var ov = document.createElement("div");
-      ov.className = "ov";
-      ov.textContent = "Completed";
-      c.appendChild(ov);
-    }
+      var doneTxt = setsOf(W, D, e.id).map(function (v) {
+        return e.unit == "kg"
+          ? (v.kg || "?") + "×" + (v.r || "?")
+          : (v.kg || "?") + (e.unit == "sec" ? " s" : " min");
+      });
+      doneBar(c, e.id + "_" + W + "_" + D, e.name, doneTxt.join(" · "));
+    } else delete OPEN[e.id + "_" + W + "_" + D];
     c.appendChild(br);
     L.appendChild(c);
   });
@@ -790,7 +942,7 @@ function render() {
   };
   cd.appendChild(mkTr("cool", 10, 7, 5));
   cd.appendChild(cb);
-  doneOv(cd, "c" + W + D, cdn);
+  doneOv(cd, "c" + W + D, cdn, "Cool-down walk", trs(g("cool"), 10, 7, 5));
   L.appendChild(cd);
   document.getElementById("fill").style.width = (tot ? (done / tot) * 100 : 0) + "%";
   document.getElementById("prog").textContent = done + " of " + tot + " sets done";
