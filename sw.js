@@ -12,7 +12,7 @@
 // When you add a new file to the app, add it to FILES below.
 // Changing VERSION makes phones throw away the old saved copy.
 
-var VERSION = "gc-v6";
+var VERSION = "gc-v7";
 var FILES = [
   "./",
   "index.html",
@@ -29,6 +29,7 @@ var FILES = [
   "progress.js",
   "body.js",
   "timer.js",
+  "backup.js",
   "manifest.webmanifest",
   "icons/icon.svg",
   "icons/icon-192.png",

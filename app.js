@@ -812,6 +812,7 @@ function render() {
   balls();
   rec();
   if (PR) princeHero();
+  if (window.bkNudge) bkNudge();
   first = false;
 }
 document.getElementById("bkx").onclick = function () {
@@ -822,24 +823,32 @@ document.getElementById("bkx").onclick = function () {
     document.execCommand("copy");
   } catch (e) {}
 };
-document.getElementById("bki").onclick = function () {
+// Restore a backup object (from the text box or a backup file).
+// Before replacing anything, the current data is kept in "gcBeforeRestore"
+// so a mistaken restore can be undone. Returns true if it worked.
+function restoreFrom(o) {
+  if (!o || typeof o != "object" || Array.isArray(o)) return false;
   try {
-    var o = JSON.parse(document.getElementById("bk").value);
-    if (o && typeof o == "object") {
-      upgradeLogs(o);
-      // An older backup has no saved plan: keep the plan you have now.
-      if (!o.plan && st.plan) o.plan = st.plan;
-      // Same for your body-weight/waist log.
-      if (!o.body && st.body) o.body = st.body;
-      st = o;
-      save();
-      loadPlan();
-      render();
-      if (typeof showView == "function") showView();
-    }
-  } catch (e) {
-    alert("That text is not a valid backup.");
-  }
+    localStorage.setItem("gcBeforeRestore", JSON.stringify(st));
+  } catch (e) {}
+  upgradeLogs(o);
+  // An older backup has no saved plan: keep the plan you have now.
+  if (!o.plan && st.plan) o.plan = st.plan;
+  // Same for your body-weight/waist log.
+  if (!o.body && st.body) o.body = st.body;
+  st = o;
+  save();
+  loadPlan();
+  render();
+  if (typeof showView == "function") showView();
+  return true;
+}
+document.getElementById("bki").onclick = function () {
+  var o = null;
+  try {
+    o = JSON.parse(document.getElementById("bk").value);
+  } catch (e) {}
+  if (!restoreFrom(o)) alert("That text is not a valid backup.");
 };
 applyEF();
 document.getElementById("ef").onclick = function () {

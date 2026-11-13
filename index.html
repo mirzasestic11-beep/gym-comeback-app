@@ -33,6 +33,7 @@
 <div class="small" id="prog"></div>
 <div id="list"></div>
 <div id="report"></div>
+<div id="bknudge" class="card" hidden></div>
 <div class="card"><b>How did your wrist and elbow feel?</b>
 <select id="wrist" style="margin-top:8px"><option value="">Pick one</option><option>Fine</option><option>A bit sore</option><option>Pain, stopped early</option></select>
 <textarea id="note" rows="2" placeholder="Notes (e.g. leg press 50 kg felt easy)" style="margin-top:8px"></textarea></div>
@@ -51,7 +52,13 @@
 <div class="pills" id="edays"></div>
 <div id="elist"></div>
 </div>
-<div class="card"><b>Backup</b><p class="small" style="margin:4px 0 8px">Tap Show my backup and copy the text to keep your logs. Paste it back here and tap Restore to move them to a new place.</p><textarea id="bk" rows="3"></textarea><div class="row" style="margin-top:8px"><button class="pill" id="bkx">Show my backup</button><button class="pill" id="bki">Restore</button></div></div>
+<div class="card" id="bkcard"><b>Backup</b>
+<p class="small" id="bkstat" style="margin:4px 0 8px"></p>
+<div class="row"><button class="pill on" id="bksave">Save backup file</button><button class="pill" id="bkload">Restore from file</button></div>
+<input type="file" id="bkfile" accept=".txt,.json,text/plain,application/json" hidden>
+<p class="small" id="bkmsg" role="status"></p>
+<details style="margin-top:6px"><summary class="small">Copy and paste instead</summary>
+<p class="small" style="margin:4px 0 8px">Tap Show my backup and copy the text to keep your logs. Paste it back here and tap Restore to move them to a new place.</p><textarea id="bk" rows="3"></textarea><div class="row" style="margin-top:8px"><button class="pill" id="bkx">Show my backup</button><button class="pill" id="bki">Restore</button></div></details></div>
 <p class="small">Not medical advice. If the wrist hurts sharply or keeps getting worse, stop and see a doctor or physio.</p>
 </main>
 <div id="rest" hidden></div>
@@ -63,4 +70,5 @@
 <script src="body.js"></script>
 <script src="progress.js"></script>
 <script src="timer.js"></script>
+<script src="backup.js"></script>
 </body></html>
