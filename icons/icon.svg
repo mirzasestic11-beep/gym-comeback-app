@@ -1,22 +1,69 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <radialGradient id="bg" cx="50%" cy="35%" r="75%">
-      <stop offset="0" stop-color="#1b3a8a"/><stop offset="1" stop-color="#070d1f"/>
-    </radialGradient>
-    <radialGradient id="aura" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#4fd8ff" stop-opacity=".55"/><stop offset="1" stop-color="#4fd8ff" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffe58a"/><stop offset=".55" stop-color="#ffc83d"/><stop offset="1" stop-color="#d98a00"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" fill="url(#bg)"/>
-  <ellipse cx="256" cy="256" rx="230" ry="150" fill="url(#aura)"/>
-  <g fill="url(#gold)" stroke="#7a4a00" stroke-width="6">
-    <rect x="150" y="236" width="212" height="40" rx="12"/>
-    <rect x="96"  y="166" width="44" height="180" rx="14"/>
-    <rect x="140" y="190" width="34" height="132" rx="12"/>
-    <rect x="372" y="166" width="44" height="180" rx="14"/>
-    <rect x="338" y="190" width="34" height="132" rx="12"/>
-  </g>
+<defs>
+<linearGradient id="skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7cfa6"/><stop offset="1" stop-color="#eeb98c"/></linearGradient>
+<linearGradient id="lens" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7dffb6" stop-opacity=".62"/><stop offset=".6" stop-color="#1ed173" stop-opacity=".55"/><stop offset="1" stop-color="#0a8a4a" stop-opacity=".7"/></linearGradient>
+<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#cfd6ee"/><stop offset="1" stop-color="#8f9ac2"/></linearGradient>
+<clipPath id="lc"><path d="M58 118 L366 118 L398 150 L398 352 L366 384 L90 384 L58 352Z"/></clipPath>
+</defs>
+<!-- skin base -->
+<rect width="512" height="512" fill="url(#skin)"/>
+<!-- cel shadow on cheek/side -->
+<!-- HAIR (own design): layered spiky bangs falling down, side locks framing the face -->
+<path fill="#1c1f45" stroke="#07071a" stroke-width="7" stroke-linejoin="round" d="
+M0 0 L512 0 L512 330 L500 250 L490 300 L484 150 L470 96
+L440 104 L420 62 L396 102 L370 54 L344 100 L314 48 L288 102 L258 52 L232 100 L204 50 L176 102 L146 56 L120 100 L92 60 L62 100
+L44 140 L40 340 L26 250 L14 320 L0 270Z"/>
+<!-- back layer of locks for depth -->
+<path fill="#2a2f66" d="M150 0 L196 0 L236 58 L216 64 Z M280 0 L326 0 L330 50 L304 40Z M392 0 L440 0 L424 52 L404 40Z M40 0 L80 0 L76 52 L54 60Z"/>
+<!-- highlights -->
+<g fill="#4a54a3" opacity=".9">
+<path d="M112 30 C140 40 160 60 170 86 L160 92 C150 70 132 52 108 40Z"/>
+<path d="M240 20 C262 34 280 52 290 70 L280 76 C268 58 252 44 234 32Z"/>
+<path d="M352 26 C372 40 384 60 390 80 L378 84 C372 66 362 50 346 36Z"/>
+<path d="M18 120 C30 150 36 190 34 230 L24 228 C26 192 22 156 10 128Z"/>
+<path d="M496 140 C504 170 506 210 504 250 L496 248 C498 212 496 176 488 148Z"/>
+</g>
+<!-- brow: thick, sharp, angled down toward the nose -->
+<path d="M70 176 L250 150 L292 176 L246 182 L84 206Z" fill="#191b38" stroke="#07071a" stroke-width="6" stroke-linejoin="round"/>
+<!-- eye: sharp anime almond -->
+<path d="M80 270 C120 228 196 214 262 236 L290 252 C246 296 160 314 96 292Z" fill="#ffffff" stroke="#07071a" stroke-width="5" stroke-linejoin="round"/>
+<clipPath id="ec"><path d="M80 270 C120 228 196 214 262 236 L290 252 C246 296 160 314 96 292Z"/></clipPath>
+<g clip-path="url(#ec)">
+ <ellipse cx="186" cy="262" rx="40" ry="46" fill="#1b2350"/>
+ <ellipse cx="186" cy="262" rx="20" ry="26" fill="#07071a"/>
+ <ellipse cx="200" cy="246" rx="9" ry="10" fill="#fff"/>
+ <path d="M80 236 L300 236 L300 252 L80 262Z" fill="#000" opacity=".18"/>
+</g>
+<!-- heavy upper lash line -->
+<path d="M70 274 C114 222 196 206 270 232 L306 246 L276 244 C210 222 130 232 82 284Z" fill="#07071a"/>
+<path d="M110 300 C160 312 220 302 262 280" stroke="#07071a" stroke-width="4" fill="none" stroke-linecap="round"/>
+<!-- FACE DETAILS below the lens -->
+<!-- soft shadow under the cheekbone -->
+<path fill="#e1a77d" d="M0 430 C90 410 190 416 262 446 C200 452 130 470 70 512 L0 512Z"/>
+<!-- green light from the lens on the cheek -->
+<defs><radialGradient id="cast" cx="50%" cy="0%" r="60%"><stop offset="0" stop-color="#3dff95" stop-opacity=".45"/><stop offset=".6" stop-color="#3dff95" stop-opacity=".12"/><stop offset="1" stop-color="#3dff95" stop-opacity="0"/></radialGradient></defs>
+<rect x="30" y="380" width="420" height="132" fill="url(#cast)"/>
+<!-- LENS: big chamfered glass over the eye -->
+<path fill-rule="evenodd" d="M50 110 L370 110 L406 146 L406 356 L370 392 L86 392 L50 356Z M58 118 L58 352 L90 384 L366 384 L398 352 L398 150 L366 118Z" fill="url(#metal)" stroke="#07071a" stroke-width="6" stroke-linejoin="round"/>
+<path d="M58 118 L366 118 L398 150 L398 352 L366 384 L90 384 L58 352Z" fill="url(#lens)"/>
+<g clip-path="url(#lc)">
+ <g stroke="#ecfff4" stroke-opacity=".14" stroke-width="2"><path d="M50 140 H410 M50 160 H410 M50 180 H410 M50 200 H410 M50 220 H410 M50 240 H410 M50 260 H410 M50 280 H410 M50 300 H410 M50 320 H410 M50 340 H410 M50 360 H410"/></g>
+ <!-- target lock around the eye -->
+ <g stroke="#ecfff4" stroke-width="5" fill="none" stroke-linecap="square">
+  <path d="M128 206 L128 186 L148 186 M224 186 L244 186 L244 206 M244 318 L244 338 L224 338 M148 338 L128 338 L128 318"/>
+ </g>
+ <!-- readout -->
+ <text x="266" y="168" font-family="Courier New, monospace" font-weight="700" font-size="20" fill="#ecfff4" letter-spacing="2">POWER</text>
+ <text x="388" y="214" text-anchor="end" font-family="Courier New, monospace" font-weight="700" font-size="44" fill="#ffffff">9001</text>
+ <g fill="#ecfff4" opacity=".9"><rect x="268" y="236" width="104" height="9"/><rect x="268" y="254" width="78" height="9"/><rect x="268" y="272" width="92" height="9"/></g>
+ <path d="M268 330 L292 330 L304 312 L320 346 L334 322 L352 322 L362 312 L384 312" stroke="#ecfff4" stroke-width="5" fill="none" stroke-linejoin="round"/>
+ <!-- glare -->
+ <path d="M70 120 L150 120 L80 300 L60 270Z" fill="#fff" fill-opacity=".2"/>
+</g>
+<!-- ear module: flush against the lens, same height -->
+<path d="M410 110 L456 110 L478 132 L478 370 L456 392 L410 392Z" fill="url(#metal)" stroke="#07071a" stroke-width="8" stroke-linejoin="round"/>
+<rect x="420" y="138" width="44" height="66" fill="#1d3a9e" stroke="#07071a" stroke-width="5"/>
+<rect x="432" y="152" width="12" height="22" fill="#3dff95"/>
+<g stroke="#5b6794" stroke-width="5" stroke-linecap="round"><path d="M422 236 H466 M422 256 H466 M422 276 H466 M422 296 H466"/></g>
+<rect x="432" y="340" width="24" height="12" fill="#f5c542" stroke="#07071a" stroke-width="3"/>
 </svg>

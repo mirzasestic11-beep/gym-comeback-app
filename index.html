@@ -8,15 +8,23 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 </head><body><main>
-<div class="hero"><div class="aura"></div><h1>Saiyan Gym Comeback</h1><div class="tag2" id="vq"></div><div class="balls" id="balls"></div></div>
+<div class="hero"><div class="aura"></div>
+<svg class="flames" viewBox="0 0 260 120" aria-hidden="true"><defs><linearGradient id="flg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="var(--aura)" stop-opacity=".5"/><stop offset=".75" stop-color="var(--aura)" stop-opacity=".1"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+<g class="fl1" fill="url(#flg)"><path d="M55 120 C49 92 61 70 71 40 C75 66 85 74 89 58 C93 34 107 22 111 0 C119 26 123 44 131 30 C137 14 143 8 149 0 C151 26 163 40 169 58 C175 44 185 40 189 26 C195 52 209 78 203 120Z"/></g>
+<g class="fl2" fill="url(#flg)"><path d="M81 120 C77 96 89 80 97 60 C101 78 111 80 115 66 C119 48 127 38 130 20 C135 38 139 52 147 62 C153 52 161 46 165 34 C171 60 181 84 177 120Z"/></g>
+<path class="spk" stroke="#fff6c8" stroke-width="1.6" fill="none" stroke-linejoin="round" d="M44 46 l12 12 -8 4 12 14 M216 40 l-10 13 8 3 -11 15"/></svg>
+<div class="crest">Prince mode</div>
+<h1>Saiyan Gym <span class="h1b">Comeback</span></h1><div class="tag2" id="vq"></div><div class="balls" id="balls"></div></div>
+<div id="rankhud"></div>
 <button class="pill" id="install" style="width:100%;margin-bottom:6px" hidden>Install app on this phone</button>
-<button class="pill" id="theme" style="width:100%;margin-bottom:6px"></button>
+<div class="pills looks" id="theme" aria-label="Look"></div>
 <button class="pill" id="ef" style="width:100%;margin-bottom:6px"></button>
 <div class="pills" id="views"></div>
 <div id="workoutView">
 <p class="sub">3 days a week · about 1 hour · no going to failure</p>
-<div class="small">Week / gravity level</div>
-<div class="pills" id="weeks"></div>
+<div class="small wklbl">Week / gravity level</div>
+<div class="gdial"><div class="gt"><span>Gravity chamber</span><span>Week <b id="gw">1</b> of 4</span></div>
+<div class="pills" id="weeks"></div></div>
 <div class="pills" id="days"></div>
 <div class="warn" id="rule"></div>
 <div id="rec"></div>
@@ -49,6 +57,7 @@
 <div id="rest" hidden></div>
 <script src="plan.js"></script>
 <script src="library.js"></script>
+<script src="prince.js"></script>
 <script src="app.js"></script>
 <script src="editor.js"></script>
 <script src="body.js"></script>

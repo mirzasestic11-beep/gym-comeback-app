@@ -157,10 +157,15 @@ function mkTr(id, dt, di, ds) {
   return r;
 }
 var RM = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-var SY = true;
+// Look: "saiyan", "prince" (Vegeta style, see prince.js) or "classic".
+// SY = any Saiyan-style look (animations, gravity wording); PR = Prince look.
+var THEME = "saiyan";
 try {
-  SY = localStorage.getItem("gcTheme") != "classic";
+  var t0 = localStorage.getItem("gcTheme");
+  if (t0 == "classic" || t0 == "prince") THEME = t0;
 } catch (e) {}
+var SY = THEME != "classic",
+  PR = THEME == "prince";
 var RANKS = [
   "Base",
   "Super Saiyan",
@@ -168,11 +173,36 @@ var RANKS = [
   "Super Saiyan 3",
   "Super Saiyan God",
   "Super Saiyan Blue",
+  "Ultra Ego",
 ];
 function applyTheme() {
-  document.body.className = SY ? "sy" : "";
+  SY = THEME != "classic";
+  PR = THEME == "prince";
+  document.body.className = PR ? "sy pr" : SY ? "sy" : "";
+  // Look picker: three buttons
   var t = document.getElementById("theme");
-  if (t) t.textContent = SY ? "Classic look" : "Saiyan look";
+  if (!t) return;
+  t.innerHTML = "";
+  [
+    ["saiyan", "Saiyan"],
+    ["prince", "Prince"],
+    ["classic", "Classic"],
+  ].forEach(function (o) {
+    var b = document.createElement("button");
+    b.className = "pill" + (THEME == o[0] ? " on" : "");
+    b.textContent = o[1];
+    b.setAttribute("aria-label", o[1] + " look");
+    b.onclick = function () {
+      THEME = o[0];
+      try {
+        localStorage.setItem("gcTheme", THEME);
+      } catch (e) {}
+      applyTheme();
+      render();
+      if (typeof showView == "function") showView();
+    };
+    t.appendChild(b);
+  });
 }
 function ripple(x, y) {
   if (RM || !SY) return;
@@ -339,7 +369,8 @@ function fmtSets(a, t) {
 function lastOf(id, t) {
   for (var w = W - 1; w >= 0; w--) {
     var a = setsOf(w, D, id);
-    if (a.length) return "<p><b>Last time (week " + (w + 1) + "):</b> " + fmtSets(a, t) + "</p>";
+    if (a.length)
+      return "<p class='last'><b>Last time (week " + (w + 1) + "):</b> " + fmtSets(a, t) + "</p>";
   }
   return "";
 }
@@ -440,7 +471,8 @@ function report() {
     n = SETS[W],
     vol = 0,
     sets = 0,
-    rows = "";
+    rows = "",
+    rivals = []; // Prince look: exercises where you beat your last numbers
   for (var ei = 0; ei < ex.length; ei++) {
     var e = ex[ei];
     if (hid(e)) continue;
@@ -461,17 +493,27 @@ function report() {
       a.forEach(function (v) {
         vol += (parseFloat(v.kg) || 0) * (parseFloat(v.r) || 0);
       });
+    var beat =
+      PR && e.unit == "kg"
+        ? a.map(function (v, si) {
+            return !!rivalText(e.id, si, v);
+          })
+        : [];
+    if (beat.indexOf(true) > -1) rivals.push(e.name);
     rows +=
       "<div class='rx'><div class='n'>" +
       e.name +
       "</div>" +
       a
-        .map(function (v) {
+        .map(function (v, si) {
           return (
-            "<span class='chip'>" +
+            "<span class='chip" +
+            (beat[si] ? " up" : "") +
+            "'>" +
             (e.unit == "kg"
               ? (v.kg || "?") + " kg × " + (v.r || "?")
               : (v.kg || "?") + (e.unit == "sec" ? " s" : " min")) +
+            (beat[si] ? " ▲" : "") +
             "</span>"
           );
         })
@@ -483,7 +525,11 @@ function report() {
     wr = (st[k("wr")] || {}).v,
     nt = (st[k("nt")] || {}).v;
   var h =
-    "<div class='rep'><div class='rh'><h3>Workout complete 💪</h3><div>Week " +
+    "<div class='rep'><div class='rh'>" +
+    (PR
+      ? "<div class='beam'></div><div class='k'>Workout complete</div><h3>Final blow landed</h3>"
+      : "<h3>Workout complete 💪</h3>") +
+    "<div>Week " +
     (W + 1) +
     " · " +
     DAYS[D].n +
@@ -502,7 +548,7 @@ function report() {
     "</b><span>Sets done</span></div></div>";
   var zb = zen(co, wr),
     pw = Math.round((vol * 1.5 + sets * 100) * (zb ? 1.2 : 1)),
-    rkn = RANKS[Math.min(5, Math.floor(sess() / 2))];
+    rkn = RANKS[Math.min(RANKS.length - 1, Math.floor(sess() / 2))];
   h +=
     (zb
       ? "<div class='zb'>ZENKAI BOOST<small>You came back from a hurt and trained pain-free. +20% power.</small></div>"
@@ -515,7 +561,9 @@ function report() {
     (pw > 9000 ? "<em>It’s over 9000!</em>" : "") +
     "<div class='rk'>Rank: " +
     rkn +
-    "</div></div>";
+    (PR && rkn == "Ultra Ego" ? " · <i>Ultra Ego unlocked</i>" : "") +
+    "</div></div>" +
+    (PR ? prideBlock(rivals) : "");
   h +=
     "<div class='rx'><div class='n'>Warm-up walk</div><span class='chip'>" +
     trs(wv, 20, 9, 5.5) +
@@ -548,7 +596,8 @@ function render() {
   for (var i = 0; i < 4; i++) {
     var b = document.createElement("button");
     b.className = "pill" + (i == W ? " on" : "");
-    b.textContent = SY ? i + 1 + "x" : "W" + (i + 1);
+    if (PR) b.innerHTML = "<b>" + (i + 1) + "x</b><span>Week " + (i + 1) + "</span>";
+    else b.textContent = SY ? i + 1 + "x" : "W" + (i + 1);
     b.onclick = (function (i) {
       return function () {
         W = i;
@@ -676,6 +725,7 @@ function render() {
           kg.style.gridColumn = "span 2";
         }
         r.appendChild(ch);
+        if (PR && e.unit == "kg") rivalBadge(r, e.id, s, v);
         c.appendChild(r);
       })(s);
     }
@@ -761,6 +811,7 @@ function render() {
   report();
   balls();
   rec();
+  if (PR) princeHero();
   first = false;
 }
 document.getElementById("bkx").onclick = function () {
@@ -797,14 +848,6 @@ document.getElementById("ef").onclick = function () {
     localStorage.setItem("gcEF", EF ? "1" : "0");
   } catch (e) {}
   applyEF();
-  render();
-};
-document.getElementById("theme").onclick = function () {
-  SY = !SY;
-  try {
-    localStorage.setItem("gcTheme", SY ? "saiyan" : "classic");
-  } catch (e) {}
-  applyTheme();
   render();
 };
 applyTheme();

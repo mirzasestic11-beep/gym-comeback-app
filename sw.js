@@ -12,13 +12,18 @@
 // When you add a new file to the app, add it to FILES below.
 // Changing VERSION makes phones throw away the old saved copy.
 
-var VERSION = "gc-v5";
+var VERSION = "gc-v6";
 var FILES = [
   "./",
   "index.html",
   "styles.css",
   "plan.js",
   "library.js",
+  "prince.js",
+  "fonts/russo-one.woff2",
+  "fonts/chakra-400.woff2",
+  "fonts/chakra-600.woff2",
+  "fonts/chakra-700.woff2",
   "editor.js",
   "app.js",
   "progress.js",

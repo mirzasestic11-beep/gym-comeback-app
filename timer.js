@@ -136,15 +136,21 @@ function restDraw() {
   }
   box.hidden = false;
   document.body.classList.add("resting");
-  var sy = document.body.classList.contains("sy");
+  var sy = document.body.classList.contains("sy"),
+    pr = document.body.classList.contains("pr");
   var state = left > 0 ? "run" : "done";
   // Only rebuild the buttons when needed; just update the numbers otherwise.
-  if (box.dataset.state != state + sy) {
-    box.dataset.state = state + sy;
+  if (box.dataset.state != state + sy + pr) {
+    box.dataset.state = state + sy + pr;
     box.innerHTML = "";
     var top = document.createElement("div");
     top.className = "rtop";
-    top.innerHTML = "<span class='rlbl'></span><b class='rtime' aria-live='off'></b>";
+    // Prince look: a round scouter-style countdown with "what's next" text.
+    top.innerHTML = pr
+      ? "<div class='ring'><svg viewBox='0 0 66 66' aria-hidden='true'><circle cx='33' cy='33' r='29' class='rbg'/>" +
+        "<circle cx='33' cy='33' r='29' class='rfg' transform='rotate(-90 33 33)'/></svg>" +
+        "<b class='rtime' aria-live='off'></b></div><div class='rtxt'><span class='rlbl'></span><span class='rnext'></span></div>"
+      : "<span class='rlbl'></span><b class='rtime' aria-live='off'></b>";
     box.appendChild(top);
     var bar = document.createElement("div");
     bar.className = "bar";
@@ -196,7 +202,29 @@ function restDraw() {
         ? "Power restored! Next set"
         : "Rest over · next set";
   box.querySelector(".rtime").textContent = state == "run" ? mmss(left) : "GO";
+  if (pr) {
+    var frac = state == "run" ? Math.max(0, left / REST) : 0;
+    box.querySelector(".rfg").style.strokeDashoffset = (182.2 * (1 - frac)).toFixed(1);
+    box.querySelector(".rnext").textContent = nextUp();
+  }
   box.querySelector(".bar i").style.width = (state == "run" ? (1 - left / REST) * 100 : 100) + "%";
+}
+
+// Prince look: which set is next, read from the Workout page.
+function nextUp() {
+  var rows = document.querySelectorAll("#list .card .set");
+  for (var i = 0; i < rows.length; i++) {
+    if (!rows[i].querySelector(".chk.on")) {
+      var card = rows[i].closest(".card"),
+        h = card && card.querySelector("h3");
+      var sn = rows[i].querySelector("span");
+      if (h && sn)
+        return (
+          "Next: " + h.textContent + ", " + sn.textContent.toLowerCase() + ". Breathe. Then strike."
+        );
+    }
+  }
+  return "All sets done. Finish strong.";
 }
 
 // −15s / +15s: changes this rest AND remembers the length for next time.
