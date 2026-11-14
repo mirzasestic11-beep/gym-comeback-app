@@ -32,7 +32,7 @@ function newId(name) {
 function hasHistory(d, id) {
   for (var key in st) {
     for (var w = 0; w < 4; w++) {
-      var pre = w + "-" + d + "-";
+      var pre = w + "-" + SD(d) + "-"; // this plan's own day numbers
       if (key.indexOf(pre + id + "-") === 0 || key === pre + "sk:" + id || key === pre + "xs:" + id)
         return true;
     }
@@ -52,14 +52,22 @@ function savePlan() {
         return d.ex;
       }),
     );
-  if (same) delete st.plan;
-  else
-    st.plan = {
-      v: 1,
-      days: DAYS.map(function (d) {
-        return { ex: d.ex };
-      }),
-    };
+  var mine = {
+    v: 1,
+    days: DAYS.map(function (d) {
+      return { ex: d.ex };
+    }),
+  };
+  // The 3-day plan keeps using st.plan (as before); other plans st.plans[days].
+  if (DPW == 3) {
+    if (same) delete st.plan;
+    else st.plan = mine;
+  } else {
+    st.plans = st.plans || {};
+    if (same) delete st.plans[DPW];
+    else st.plans[DPW] = mine;
+    if (!Object.keys(st.plans).length) delete st.plans;
+  }
   save();
   render(); // update the Workout page too
 }
@@ -77,7 +85,7 @@ function btn(label, fn, cls) {
 }
 
 function editor() {
-  if (ED == null) ED = D;
+  if (ED == null || ED > DAYS.length - 1) ED = Math.min(D, DAYS.length - 1);
   var pd = document.getElementById("edays");
   pd.innerHTML = "";
   DAYS.forEach(function (d, i) {
@@ -116,13 +124,21 @@ function editor() {
       "</div>";
     var r = document.createElement("div");
     r.className = "row ebtns";
-    var up = btn("↑", function () {
-      move(i, -1);
-    }, "earr");
+    var up = btn(
+      "↑",
+      function () {
+        move(i, -1);
+      },
+      "earr",
+    );
     up.setAttribute("aria-label", "Move up");
-    var dn = btn("↓", function () {
-      move(i, 1);
-    }, "earr");
+    var dn = btn(
+      "↓",
+      function () {
+        move(i, 1);
+      },
+      "earr",
+    );
     dn.setAttribute("aria-label", "Move down");
     r.appendChild(up);
     r.appendChild(dn);

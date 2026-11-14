@@ -2443,3 +2443,28 @@ body.pr {
   background: #060d27;
   color: #fff;
 }
+
+/* ---- Training days per week (You page) ---- */
+.ydpw {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+.ydpw .ydpwb {
+  min-height: 64px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+}
+.ydpw .ydpwb b {
+  font-size: 1rem;
+}
+.ydpw .ydpwb span {
+  font-size: 0.875rem;
+  line-height: 1.25;
+}

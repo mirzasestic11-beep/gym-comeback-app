@@ -125,22 +125,57 @@ if (upgradeLogs(st)) {
 // plan.js holds the ORIGINAL plan. If you've edited it, your version is saved
 // inside your logs as st.plan, so the Backup box includes it automatically.
 // Day names always come from plan.js; only the exercise lists are yours.
-var DEFAULT_DAYS = JSON.parse(JSON.stringify(DAYS));
+// Training days per week (2-5, default 3) picks the plan (plans.js). Each
+// plan keeps its logs under its own day numbers, so switching never touches
+// another plan's logs. Saved in the logs as st.dpw (missing = 3).
+var DPW = 3;
+function readDpw() {
+  var n = +st.dpw;
+  DPW = PLAN_BASE.hasOwnProperty(n) ? n : 3;
+}
+readDpw();
+var DEFAULT_DAYS = planTemplate(DPW);
+// The day you see (0, 1, 2...) -> the day number its logs are stored under.
+// For the 3-day plan this is unchanged (0-2).
+function SD(d) {
+  return PLAN_BASE[DPW] + d;
+}
+// Your edited version of the current plan, if any (3 days: st.plan as before;
+// other plans: st.plans[days]).
+function myPlan() {
+  return DPW == 3 ? st.plan : (st.plans || {})[DPW];
+}
 function validEx(e) {
   return e && typeof e.id == "string" && typeof e.name == "string" && e.name;
 }
 function loadPlan() {
-  var p = st.plan;
+  readDpw();
+  DEFAULT_DAYS = planTemplate(DPW);
+  var p = myPlan();
   DAYS = DEFAULT_DAYS.map(function (d, i) {
     var mine = p && p.days && p.days[i] && p.days[i].ex;
     var ex = Array.isArray(mine) && mine.every(validEx) ? mine : d.ex;
     return { n: d.n, t: d.t, ex: JSON.parse(JSON.stringify(ex)) };
   });
+  if (D > DAYS.length - 1) D = 0;
 }
 loadPlan();
+// Switch plans: 2, 3, 4 or 5 days. Logs of every plan stay where they are.
+function setDaysPerWeek(n) {
+  n = +n;
+  if (!PLAN_BASE.hasOwnProperty(n)) return;
+  if (n == 3) delete st.dpw;
+  else st.dpw = n;
+  save();
+  loadPlan();
+  D = 0;
+  if (typeof PD != "undefined") PD = null;
+  if (typeof ED != "undefined") ED = null;
+  render();
+}
 try {
   W = Math.min(3, +localStorage.getItem("gcW") || 0);
-  D = Math.min(2, +localStorage.getItem("gcD") || 0);
+  D = Math.min(DAYS.length - 1, +localStorage.getItem("gcD") || 0);
 } catch (e) {}
 function save() {
   try {
@@ -150,7 +185,7 @@ function save() {
   if (typeof bkNudge == "function") bkNudge();
 }
 function k(a) {
-  return W + "-" + D + "-" + a;
+  return W + "-" + SD(D) + "-" + a;
 }
 function g(a) {
   return st[k(a)] || {};
@@ -533,7 +568,7 @@ function tm(ms) {
   return new Date(ms).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 function sget(w, d, a) {
-  return st[w + "-" + d + "-" + a] || {};
+  return st[w + "-" + SD(d) + "-" + a] || {};
 }
 function setsOf(w, d, id) {
   var o = [];
@@ -1039,7 +1074,7 @@ function restoreFrom(o) {
   // Same for your body-weight/waist log.
   if (!o.body && st.body) o.body = st.body;
   // Same for gym days, break mode and active rest (features.js).
-  ["sched", "brk", "breaks", "rest"].forEach(function (key) {
+  ["sched", "brk", "breaks", "rest", "dpw", "plans"].forEach(function (key) {
     if (o[key] === undefined && st[key] !== undefined) o[key] = st[key];
   });
   st = o;

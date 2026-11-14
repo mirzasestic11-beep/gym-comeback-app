@@ -209,7 +209,8 @@ function achievements(exclude) {
   var planned = DAYS.length * 4,
     doneDays = {};
   ss.forEach(function (s) {
-    if (s.w < 4 && s.d < DAYS.length) doneDays[s.w + "-" + s.d] = 1;
+    var base = PLAN_BASE[DPW];
+    if (s.w < 4 && s.d >= base && s.d < base + DAYS.length) doneDays[s.w + "-" + s.d] = 1;
   });
   var comeback = 0;
   for (var i = 1; i < ss.length; i++) if ((ss[i].ci - ss[i - 1].co) / DAY >= 7) comeback = 1;
@@ -264,7 +265,7 @@ function achievements(exclude) {
 // Workout report: badges earned (marked NEW if this workout earned them)
 // and a positive message when this workout is a comeback.
 function achBlock() {
-  var cur = W + "-" + D,
+  var cur = W + "-" + SD(D),
     now = achievements(),
     before = achievements(cur);
   var ss = sessions(),
@@ -305,7 +306,7 @@ function achBlock() {
 // -------------------------------------------------- 14+ days off: ease in
 function easeInfo() {
   if ((st[k("co")] || {}).v) return null; // this session is already done
-  var cur = W + "-" + D,
+  var cur = W + "-" + SD(D),
     ss = sessions().filter(function (s) {
       return s.w + "-" + s.d != cur;
     });
@@ -335,7 +336,7 @@ function easeHint(id, s) {
 function nextSession() {
   for (var w = 0; w < 4; w++)
     for (var d = 0; d < DAYS.length; d++)
-      if (!(st[w + "-" + d + "-co"] || {}).v)
+      if (!(st[w + "-" + SD(d) + "-co"] || {}).v)
         return "Week " + (w + 1) + " · " + DAYS[d].n + ": " + DAYS[d].t.split(" (")[0];
   return "";
 }
@@ -463,23 +464,88 @@ function youPage() {
   c0.appendChild(nmsg);
   L.appendChild(c0);
 
+  // --- training days per week (picks the plan; logs of each plan stay safe)
+  var cp = fx("div", "card ycard");
+  cp.appendChild(fx("h3", "", "Training days per week"));
+  cp.appendChild(
+    fx(
+      "p",
+      "small",
+      "Picks your plan. Each plan keeps its own history, so switching never touches your other logs, and switching back brings them all back.",
+    ),
+  );
+  var prow = fx("div", "ydpw");
+  [
+    [2, "Full body A / B"],
+    [3, "Legs / Push / Pull"],
+    [4, "Upper / Lower ×2"],
+    [5, "Legs / Push / Pull + Upper + Lower"],
+  ].forEach(function (o) {
+    var on = DPW == o[0];
+    var b = fx("button", "pill ydpwb" + (on ? " on" : ""));
+    b.innerHTML = "<b>" + o[0] + " days</b><span>" + o[1] + "</span>";
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+    b.setAttribute("aria-label", o[0] + " days a week: " + o[1]);
+    b.onclick = function () {
+      if (on) return;
+      if (
+        !confirm(
+          "Switch to " +
+            o[0] +
+            " training days a week (" +
+            o[1] +
+            ")?\n\nYour logs from every plan are kept. Switch back any time.",
+        )
+      )
+        return;
+      setDaysPerWeek(o[0]);
+      // tie gym days to the plan: keep at most one per training day
+      var cur = sched();
+      if (cur.days.length > o[0]) {
+        var order = [1, 2, 3, 4, 5, 6, 0];
+        cur.days = cur.days
+          .slice()
+          .sort(function (a, b) {
+            return order.indexOf(a) - order.indexOf(b);
+          })
+          .slice(0, o[0]);
+        saveSched(cur);
+      }
+      youPage();
+      var m = document.querySelector("#ylist .ydpwmsg");
+      if (m) m.textContent = "Now on " + o[0] + " days a week. Check your gym days below.";
+    };
+    prow.appendChild(b);
+  });
+  cp.appendChild(prow);
+  var pm = fx("p", "small ymsg ydpwmsg");
+  pm.setAttribute("role", "status");
+  cp.appendChild(pm);
+  L.appendChild(cp);
+
   // --- gym days + reminder
   var s = sched();
   var c1 = fx("div", "card ycard");
   c1.appendChild(fx("h3", "", "Gym days & reminder"));
-  c1.appendChild(fx("p", "small", "Pick up to 5 days and the time you want to be reminded."));
+  c1.appendChild(
+    fx(
+      "p",
+      "small",
+      "Pick up to " + DPW + " days (one per training day) and the time you want to be reminded.",
+    ),
+  );
   var row = fx("div", "ydays");
   [1, 2, 3, 4, 5, 6, 0].forEach(function (d) {
     var on = s.days.indexOf(d) > -1;
     var b = fx("button", "pill yday" + (on ? " on" : ""), WDAY[d]);
     b.setAttribute("aria-pressed", on ? "true" : "false");
     b.setAttribute("aria-label", WDAY_LONG[d]);
-    if (!on && s.days.length >= 5) b.disabled = true;
+    if (!on && s.days.length >= DPW) b.disabled = true;
     b.onclick = function () {
       var cur = sched();
       var i = cur.days.indexOf(d);
       if (i > -1) cur.days.splice(i, 1);
-      else if (cur.days.length < 5) cur.days.push(d);
+      else if (cur.days.length < DPW) cur.days.push(d);
       saveSched(cur);
       youPage();
       featRender();
@@ -491,9 +557,9 @@ function youPage() {
     fx(
       "p",
       "small ylim",
-      s.days.length >= 5
-        ? "That's 5 days, the most you can pick."
-        : s.days.length + " of 5 days picked.",
+      s.days.length >= DPW
+        ? "That's " + DPW + " days, one for each training day in your plan."
+        : s.days.length + " of " + DPW + " days picked.",
     ),
   );
   var tl = fx("label", "ylab", "Reminder time");

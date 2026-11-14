@@ -293,7 +293,7 @@ function bestSet(stats, unit) {
 }
 
 function progress() {
-  if (PD == null) PD = D;
+  if (PD == null || PD > DAYS.length - 1) PD = Math.min(D, DAYS.length - 1);
   var pt = document.getElementById("ptitle");
   if (pt) {
     pt.textContent = NICK ? NICK + "’s progress" : "";
