@@ -516,11 +516,12 @@ function fmtSets(a, t) {
     })
     .join(", ");
 }
-function lastOf(id, t) {
+// "Last time" for one set: the same set number in the most recent earlier
+// week with ticked sets for this exercise (same day). Returns "" if none.
+function lastSetText(id, s, t) {
   for (var w = W - 1; w >= 0; w--) {
     var a = setsOf(w, D, id);
-    if (a.length)
-      return "<p class='last'><b>Last time (week " + (w + 1) + "):</b> " + fmtSets(a, t) + "</p>";
+    if (a.length) return a[s] ? "Last (week " + (w + 1) + "): " + fmtSets([a[s]], t) : "";
   }
   return "";
 }
@@ -730,8 +731,9 @@ function report() {
     if (nt) h += "<p>" + esc(nt) + "</p>";
     h += "</div>";
   }
+  if (typeof achBlock == "function") h += achBlock();
   h +=
-    "<div class='rx small'>Next session these numbers show on each exercise as ‘Last time’.</div></div>";
+    "<div class='rx small'>Next session these numbers show under each set as ‘Last’.</div></div>";
   R.innerHTML = h;
   cnt(R);
 }
@@ -821,8 +823,7 @@ function render() {
       e.tip +
       "</p><p><b>Suggested start:</b> " +
       e.start +
-      " <span class='small'>(adjust to what feels easy)</span></p>" +
-      lastOf(e.id, e.unit);
+      " <span class='small'>(adjust to what feels easy)</span></p>";
     var sk = (st[k("sk:" + e.id)] || {}).v;
     var ed = 0;
     var xs = (st[k("xs:" + e.id)] || {}).v || 0;
@@ -875,8 +876,22 @@ function render() {
           kg.style.gridColumn = "span 2";
         }
         r.appendChild(ch);
-        if (PR && e.unit == "kg") rivalBadge(r, e.id, s, v);
-        c.appendChild(r);
+        // Under the row, full width: last time's numbers for this set, then
+        // the Prince look's "Rival beaten" badge (never inside the grid).
+        var blk = document.createElement("div");
+        blk.className = "setblk";
+        blk.appendChild(r);
+        var lt = lastSetText(e.id, s, e.unit);
+        // After 14+ days off: suggest about 90% of last time (features.js)
+        if (lt && e.unit == "kg" && typeof easeHint == "function") lt += easeHint(e.id, s);
+        if (lt) {
+          var ll = document.createElement("div");
+          ll.className = "setlast";
+          ll.textContent = lt;
+          blk.appendChild(ll);
+        }
+        if (PR && e.unit == "kg") rivalBadge(blk, e.id, s, v);
+        c.appendChild(blk);
       })(s);
     }
     var br = document.createElement("div");
@@ -965,6 +980,7 @@ function render() {
   rec();
   if (PR) princeHero();
   if (window.bkNudge) bkNudge();
+  if (typeof featRender == "function") featRender();
   first = false;
 }
 document.getElementById("bkx").onclick = function () {
@@ -988,6 +1004,10 @@ function restoreFrom(o) {
   if (!o.plan && st.plan) o.plan = st.plan;
   // Same for your body-weight/waist log.
   if (!o.body && st.body) o.body = st.body;
+  // Same for gym days, break mode and active rest (features.js).
+  ["sched", "brk", "breaks", "rest"].forEach(function (key) {
+    if (o[key] === undefined && st[key] !== undefined) o[key] = st[key];
+  });
   st = o;
   save();
   loadPlan();

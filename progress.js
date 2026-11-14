@@ -5,7 +5,7 @@
 var VIEW = "w"; // "w" = Workout page, "p" = Progress page
 try {
   var sv0 = localStorage.getItem("gcView");
-  if (sv0 == "p" || sv0 == "b" || sv0 == "e") VIEW = sv0;
+  if (sv0 == "p" || sv0 == "b" || sv0 == "e" || sv0 == "y") VIEW = sv0;
 } catch (e) {}
 var PD = null; // which day the Progress page shows (starts at the workout day)
 
@@ -23,6 +23,7 @@ function showView() {
   document.getElementById("progressView").hidden = VIEW != "p";
   document.getElementById("editorView").hidden = VIEW != "e";
   document.getElementById("bodyView").hidden = VIEW != "b";
+  document.getElementById("youView").hidden = VIEW != "y";
   var vs = document.getElementById("views");
   vs.innerHTML = "";
   [
@@ -30,6 +31,7 @@ function showView() {
     ["p", "Progress"],
     ["b", "Body"],
     ["e", "Edit plan"],
+    ["y", "You"],
   ].forEach(function (o) {
     var b = document.createElement("button");
     b.className = "pill" + (VIEW == o[0] ? " on" : "");
@@ -42,6 +44,7 @@ function showView() {
   if (VIEW == "p") progress();
   if (VIEW == "e" && window.editor) editor();
   if (VIEW == "b" && window.bodyPage) bodyPage();
+  if (VIEW == "y" && window.youPage) youPage();
 }
 
 // Numbers for one exercise, one entry per week (null = nothing ticked that week).
@@ -88,6 +91,14 @@ function sv(tag, attrs, parent) {
 }
 
 // One small line chart. vals = 4 numbers or nulls (weeks 1–4).
+// Room (px) needed for a chart label of n characters at 0.875rem, measured
+// from the phone's real text size, so labels never spill outside the chart.
+function remPx() {
+  return parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+}
+function labelRoom(n) {
+  return Math.ceil(remPx() * 0.875 * 0.62 * n) + 12;
+}
 function lineChart(title, vals, unit, width) {
   var fig = document.createElement("figure");
   fig.className = "chart";
@@ -95,12 +106,12 @@ function lineChart(title, vals, unit, width) {
   cap.textContent = title;
   fig.appendChild(cap);
 
-  var Wd = Math.max(130, Math.round(width)),
-    Ht = 116,
+  var Wd = Math.max(200, Math.round(width)),
+    Ht = Math.round(remPx() * 9),
     L = 30,
     R = 30,
-    T = 12,
-    B = 22;
+    T = Math.round(remPx() * 0.875 * 0.75) + 3,
+    B = Math.round(remPx() * 0.875 + 14);
   var pts = [];
   vals.forEach(function (v, i) {
     if (v != null) pts.push({ i: i, v: v });
@@ -122,6 +133,12 @@ function lineChart(title, vals, unit, width) {
   var y0 = Math.max(0, Math.floor(lo / step) * step),
     y1 = Math.ceil(hi / step) * step;
   if (y1 <= y0) y1 = y0 + step;
+  // Margins sized to the longest axis number (left) and the value written
+  // next to the last point (right), so no label spills outside the chart.
+  var tickChars = 1;
+  for (var tt = y0; tt <= y1 + 1e-9; tt += step) tickChars = Math.max(tickChars, num(tt).length);
+  L = labelRoom(tickChars);
+  R = labelRoom(num(pts[pts.length - 1].v).length) + 6;
   var X = function (i) {
       return L + (i * (Wd - L - R)) / 3;
     },
@@ -146,8 +163,11 @@ function lineChart(title, vals, unit, width) {
   // Gridlines + axis numbers
   for (var t = y0; t <= y1 + 1e-9; t += step) {
     sv("line", { x1: L, x2: Wd - R + 6, y1: Y(t), y2: Y(t), class: "grid" }, svg);
-    sv("text", { x: L - 6, y: Y(t) + 4, "text-anchor": "end", class: "tick" }, svg).textContent =
-      num(t);
+    sv(
+      "text",
+      { x: L - 6, y: Y(t), "text-anchor": "end", "dominant-baseline": "middle", class: "tick" },
+      svg,
+    ).textContent = num(t);
   }
   for (var i = 0; i < 4; i++)
     sv("text", { x: X(i), y: Ht - 5, "text-anchor": "middle", class: "tick" }, svg).textContent =
@@ -166,7 +186,11 @@ function lineChart(title, vals, unit, width) {
   });
   // Value next to the latest point
   var last = pts[pts.length - 1];
-  sv("text", { x: X(last.i) + 8, y: Y(last.v) + 4, class: "endv" }, svg).textContent = num(last.v);
+  sv(
+    "text",
+    { x: X(last.i) + 8, y: Y(last.v), "dominant-baseline": "middle", class: "endv" },
+    svg,
+  ).textContent = num(last.v);
 
   // Tap / hover / keyboard: show the exact number. The tap area is the whole
   // column for that week, so it's easy to hit with a finger.
@@ -217,27 +241,55 @@ function lineChart(title, vals, unit, width) {
 }
 
 // One-line summary, e.g. "Heaviest: 50 kg (week 3) · +10 kg since week 1"
-function summary(stats, key, unit, label) {
+// Plain-language line above a chart, e.g.
+// "Leg Press: 60 → 65 kg since week 1 (+5 kg)".
+function plainLine(name, stats, key, unit) {
   var have = [];
   stats.forEach(function (s, i) {
     if (s) have.push({ i: i, v: s[key] });
   });
-  var best = have.reduce(function (a, b) {
-    return b.v > a.v ? b : a;
+  var f = have[0],
+    l = have[have.length - 1];
+  if (have.length == 1)
+    return (
+      name + ": " + num(f.v) + " " + unit + " in week " + (f.i + 1) + ", your first logged week."
+    );
+  var d = l.v - f.v;
+  return (
+    name +
+    ": " +
+    num(f.v) +
+    " → " +
+    num(l.v) +
+    " " +
+    unit +
+    " since week " +
+    (f.i + 1) +
+    " (" +
+    (d > 0 ? "+" + num(d) + " " + unit : d < 0 ? "−" + num(-d) + " " + unit : "no change") +
+    ")"
+  );
+}
+// Best single set across all weeks: heaviest, then most reps.
+function bestSet(stats, unit) {
+  var best = null,
+    wk = 0;
+  stats.forEach(function (s, i) {
+    if (!s) return;
+    s.sets.forEach(function (v) {
+      var kg = parseFloat(v.kg) || 0,
+        r = parseFloat(v.r) || 0;
+      if (!best || kg > best.kg || (kg == best.kg && r > best.r)) {
+        best = { kg: kg, r: r };
+        wk = i + 1;
+      }
+    });
   });
-  var txt = label + ": " + num(best.v) + " " + unit + " (week " + (best.i + 1) + ")";
-  if (have.length > 1) {
-    var d = have[have.length - 1].v - have[0].v;
-    txt +=
-      " · " +
-      (d > 0 ? "+" : d < 0 ? "−" : "±") +
-      num(Math.abs(d)) +
-      " " +
-      unit +
-      " since week " +
-      (have[0].i + 1);
-  }
-  return txt;
+  if (!best) return "";
+  if (unit == "min") return "Best: " + num(best.kg) + " min (week " + wk + ")";
+  if (unit == "sec") return "Best hold: " + num(best.kg) + " s (week " + wk + ")";
+  if (best.kg == 0) return "Best set: " + num(best.r) + " reps, bodyweight (week " + wk + ")";
+  return "Best set: " + num(best.kg) + " kg × " + num(best.r) + " (week " + wk + ")";
 }
 
 function progress() {
@@ -283,44 +335,49 @@ function progress() {
       );
       return;
     }
+    var bs = bestSet(stats, e.unit);
+    if (bs) {
+      var bp = document.createElement("p");
+      bp.className = "pbest";
+      bp.textContent = bs;
+      c.appendChild(bp);
+    }
     var grid = document.createElement("div");
     grid.className = "charts";
     c.appendChild(grid);
-    // Width available for each chart (two side by side when there's room)
-    var full = grid.clientWidth || 300;
+    var full = grid.clientWidth || 300; // charts stack, each full width
     var pick = function (k) {
       return stats.map(function (s) {
         return s ? s[k] : null;
       });
     };
-    var lines = [];
-    if (e.unit == "min") {
-      grid.appendChild(lineChart("Minutes", pick("min"), "min", full));
-      lines.push(summary(stats, "min", "min", "Longest"));
-    } else if (e.unit == "sec") {
-      grid.appendChild(lineChart("Longest hold (seconds)", pick("top"), "s", full));
-      lines.push(summary(stats, "top", "s", "Longest hold"));
-    } else {
+    // One block per chart: short heading (the chart's caption), a plain
+    // summary sentence, then the chart.
+    function block(title, key, unit) {
+      var d = document.createElement("div");
+      d.className = "pblock";
+      var fig = lineChart(title, pick(key), unit, full);
+      var p = document.createElement("p");
+      p.className = "psum";
+      p.textContent = plainLine(e.name, stats, key, unit);
+      fig.insertBefore(p, fig.firstChild.nextSibling);
+      d.appendChild(fig);
+      grid.appendChild(d);
+    }
+    if (e.unit == "min") block("Minutes", "min", "min");
+    else if (e.unit == "sec") block("Hold time", "top", "s");
+    else {
       var bodyweight = !stats.some(function (s) {
         return s && s.top > 0;
       });
-      var half = full >= 300 && !bodyweight ? (full - 10) / 2 : full;
-      if (!bodyweight) {
-        grid.appendChild(lineChart("Heaviest set (kg)", pick("top"), "kg", half));
-        lines.push(summary(stats, "top", "kg", "Heaviest"));
-      }
-      grid.appendChild(lineChart("Total reps", pick("reps"), "reps", half));
-      lines.push(summary(stats, "reps", "reps", "Most reps"));
-      if (bodyweight) lines.push("Bodyweight exercise, so only reps are charted.");
+      if (!bodyweight) block("Weight", "top", "kg");
+      block("Reps (all sets)", "reps", "reps");
+      if (bodyweight)
+        c.insertAdjacentHTML(
+          "beforeend",
+          "<p class='small'>Bodyweight exercise, so only reps are charted.</p>",
+        );
     }
-    c.insertAdjacentHTML(
-      "beforeend",
-      lines
-        .map(function (t) {
-          return "<p>" + esc(t) + "</p>";
-        })
-        .join(""),
-    );
     // Plain table with every ticked set
     var det = document.createElement("details");
     var rows = stats

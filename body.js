@@ -89,11 +89,11 @@ function timeChart(title, pts, unit, width) {
   cap.textContent = title;
   fig.appendChild(cap);
   var Wd = Math.max(200, Math.round(width)),
-    Ht = 150,
+    Ht = Math.round(remPx() * 10),
     L = 36,
     R = 40,
-    T = 12,
-    B = 22;
+    T = Math.round(remPx() * 0.875 * 0.75) + 3,
+    B = Math.round(remPx() * 0.875 + 14);
   var x0 = pts[0].x,
     x1 = pts[pts.length - 1].x;
   if (BRANGE) x0 = Math.min(x0, x1 - BRANGE + 1);
@@ -108,6 +108,11 @@ function timeChart(title, pts, unit, width) {
   var y0 = Math.floor(lo / step) * step,
     y1 = Math.ceil(hi / step) * step;
   if (y1 <= y0) y1 = y0 + step;
+  // Margins sized to the real label widths (see labelRoom in progress.js).
+  var tickChars = 1;
+  for (var tt = y0; tt <= y1 + 1e-9; tt += step) tickChars = Math.max(tickChars, num(tt).length);
+  L = labelRoom(tickChars);
+  R = labelRoom(num(pts[pts.length - 1].t).length) + 6;
   var X = function (x) {
       return L + ((x - x0) / (x1 - x0)) * (Wd - L - R);
     },
@@ -136,8 +141,11 @@ function timeChart(title, pts, unit, width) {
   });
   for (var t = y0; t <= y1 + 1e-9; t += step) {
     sv("line", { x1: L, x2: Wd - R + 6, y1: Y(t), y2: Y(t), class: "grid" }, svg);
-    sv("text", { x: L - 6, y: Y(t) + 4, "text-anchor": "end", class: "tick" }, svg).textContent =
-      num(t);
+    sv(
+      "text",
+      { x: L - 6, y: Y(t), "text-anchor": "end", "dominant-baseline": "middle", class: "tick" },
+      svg,
+    ).textContent = num(t);
   }
   // 3 date labels: start, middle, end
   [x0, Math.round((x0 + x1) / 2), x1].forEach(function (x, k) {
@@ -169,7 +177,11 @@ function timeChart(title, pts, unit, width) {
       },
       svg,
     );
-  sv("text", { x: X(last.x) + 8, y: Y(last.t) + 4, class: "endv" }, svg).textContent = num(last.t);
+  sv(
+    "text",
+    { x: X(last.x) + 8, y: Y(last.t), "dominant-baseline": "middle", class: "endv" },
+    svg,
+  ).textContent = num(last.t);
 
   // Tap / hover anywhere: nearest entry is shown.
   var tip = document.createElement("div");

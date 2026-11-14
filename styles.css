@@ -2090,3 +2090,276 @@ body.pr {
   #intro .ifig.gold, #intro .iread, #intro .ilens { opacity: 1; }
   #intro.go * { animation: none !important; }
 }
+
+/* =====================================================================
+   READABILITY: set rows. Text >= 14px in rem (follows the phone's text
+   size), tap targets >= 48px, "last" and "Rival beaten" on their own
+   full-width lines under each set (never inside the 4-column grid).
+   ===================================================================== */
+.setblk {
+  margin-top: 10px;
+}
+.setblk .set {
+  margin-top: 0;
+  grid-template-columns: 3.25rem 1fr 1fr 48px;
+}
+.set > span,
+.pr .set > span {
+  font-size: 0.875rem;
+}
+.set input[type="number"] {
+  min-height: 48px;
+  font-size: 1rem;
+}
+.chk {
+  width: 48px;
+  height: 48px;
+}
+.setlast {
+  margin-top: 4px;
+  padding-left: calc(3.25rem + 8px); /* lines up under the input boxes */
+  font-size: 0.875rem;
+  line-height: 1.35;
+  color: var(--mu);
+}
+/* Prince look */
+.pr .setblk .set {
+  grid-template-columns: 3.25rem 1fr 1fr 48px;
+}
+.pr .set input[type="number"] {
+  height: auto;
+  min-height: 48px;
+}
+.pr .chk {
+  width: 48px;
+  height: 52px;
+}
+.pr .setlast {
+  color: #b9c6ec;
+}
+.pr .rival {
+  grid-column: auto;
+  margin-top: 6px;
+  min-height: 2.25rem;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  line-height: 1.3;
+  flex-wrap: wrap;
+}
+.pr .rival b {
+  font-size: 0.875rem;
+}
+
+/* =====================================================================
+   READABILITY: Progress and Body charts. Labels >= 14px in rem; the
+   chart code reserves room for them so nothing spills outside.
+   ===================================================================== */
+.charts {
+  flex-direction: column;
+  gap: 18px;
+}
+.chart figcaption {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--tx);
+}
+.chart .tick,
+.chart .endv {
+  font-size: 0.875rem;
+}
+.chart .tip {
+  font-size: 0.875rem;
+  padding: 4px 10px;
+}
+.psum {
+  margin: 2px 0 8px !important;
+  font-size: 0.875rem !important;
+  color: var(--tx) !important;
+}
+.pbest {
+  margin: 8px 0 4px !important;
+  font-size: 0.9375rem !important;
+  font-weight: 700;
+  color: var(--tx) !important;
+}
+.card details summary {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  font-size: 0.9375rem;
+}
+.blegend {
+  font-size: 0.875rem;
+}
+.pr .chart figcaption {
+  font-family: "Russo One", sans-serif;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Tap targets: every button at least 48px tall */
+.pill {
+  min-height: 48px;
+}
+
+/* =====================================================================
+   GYM DAYS, BREAK MODE, ACTIVE REST, BADGES (features.js)
+   Text >= 14px in rem, tap targets >= 48px, contrast >= 4.5:1.
+   ===================================================================== */
+.fban {
+  padding: 12px 14px;
+}
+.fban p {
+  margin: 0 0 10px;
+  font-size: 0.9375rem;
+  color: var(--tx);
+}
+.fban .pill {
+  width: 100%;
+}
+.easeban {
+  border-left: 4px solid var(--ac);
+}
+.ycard h3 {
+  margin: 0 0 6px;
+  font-size: 1.125rem;
+}
+.ycard .small,
+.ycard p {
+  font-size: 0.875rem;
+}
+.ydays {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* two rows, so each day is >= 48px wide */
+  gap: 6px;
+  margin: 10px 0 6px;
+}
+.ydays .pill {
+  min-width: 0;
+  min-height: 48px;
+  padding: 6px 0;
+  font-size: 0.875rem;
+}
+.ydays .pill:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ylab {
+  display: block;
+  margin: 10px 0 0;
+  font-size: 0.875rem;
+  color: var(--tx);
+}
+.ylab input,
+.ylab select {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--tx);
+  font: inherit;
+  font-size: 1rem;
+}
+.yrow {
+  display: flex;
+  gap: 10px;
+}
+.yrow .ylab {
+  flex: 1;
+  min-width: 0;
+}
+.ywide {
+  width: 100%;
+  margin-top: 12px;
+}
+.ymsg {
+  margin: 8px 0 0;
+  min-height: 1.2em;
+}
+.yh4 {
+  margin: 16px 0 4px;
+  font-size: 1rem;
+}
+.yhist {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-top: 1px solid var(--bd);
+  font-size: 0.9375rem;
+}
+.ydel {
+  flex: 0 0 48px;
+  min-width: 48px;
+  padding: 0;
+}
+.ybadge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--bd);
+}
+.ybadge .yicon {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bd);
+  font-size: 1.5rem;
+  filter: grayscale(1);
+  opacity: 0.7;
+}
+.ybadge.done .yicon {
+  background: var(--acl);
+  filter: none;
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--ac);
+}
+.ybadge .ytx b {
+  display: block;
+  font-size: 1rem;
+  color: var(--tx);
+}
+.ybadge .ytx span {
+  font-size: 0.875rem;
+  color: var(--mu);
+}
+/* report: badges and the comeback message */
+.rx.ach .chip.badge {
+  font-size: 0.875rem;
+  padding: 6px 12px;
+}
+.rx.ach .chip.new {
+  box-shadow: 0 0 0 2px var(--ac);
+  font-weight: 700;
+}
+.rx .cmsg {
+  font-size: 0.9375rem;
+  color: var(--tx);
+}
+.pr .ybadge .yicon {
+  border-radius: 0;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+.pr .ylab input,
+.pr .ylab select {
+  border-radius: 0;
+  background: #060d27;
+  color: #fff;
+}
+/* five page buttons fit on a phone */
+#views .pill {
+  min-width: 0;
+  padding-left: 2px;
+  padding-right: 2px;
+  font-size: 0.875rem;
+}
