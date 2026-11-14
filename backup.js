@@ -1,15 +1,19 @@
-// backup.js — backup files you keep OUTSIDE the browser.
+// backup.js — backups as text you keep in a note (no files, no accounts).
 //
-// "Save backup file" makes a small text file (your logs, plan and body log,
-// in the same format as the copy/paste backup) and opens Android's share
-// menu, so one tap sends it to Google Drive, Gmail, Keep or Files. Where
-// sharing files isn't possible, the file is downloaded to the phone instead.
-// "Restore from file" reads such a file back in. Before restoring, your
-// current data is kept as an undo copy (see restoreFrom in app.js).
+// "Copy backup" puts the backup text on the clipboard: a header line with
+// your nickname and the date, then your logs (same data as old backups).
+// Paste it over your previous backup note.
+// "Restore from text" (app.js) reads it back, and also reads old backups.
+// "Move to a new phone" is the only place that makes a file: export one file
+// on the old phone, "Restore from file" on the new one.
+// Before any restore, your current data is kept as an undo copy.
 //
-// Small settings, separate from your logs:
-//   gcLastBackup  when you last saved a backup file
+// Small settings on this phone, separate from your logs:
+//   gcLastBackup  when you last copied (or exported) a backup
+//   gcBackupSig   a fingerprint of your logs at that moment, to tell
+//                 whether anything changed since
 //   gcNudgeOff    when you last tapped "Not now" on the reminder
+//   gcNickAsked   the one-time nickname question has been answered
 
 var DAY = 864e5;
 
@@ -20,23 +24,49 @@ function lsGet(k) {
     return 0;
   }
 }
+function lsStr(k) {
+  try {
+    return localStorage.getItem(k) || "";
+  } catch (e) {
+    return "";
+  }
+}
 function lsSet(k, v) {
   try {
     localStorage.setItem(k, v);
   } catch (e) {}
 }
 
-function backupName() {
+function isoDay() {
   var d = new Date();
   return (
-    "gym-comeback-backup-" +
     d.getFullYear() +
     "-" +
     ("0" + (d.getMonth() + 1)).slice(-2) +
     "-" +
-    ("0" + d.getDate()).slice(-2) +
-    ".txt"
+    ("0" + d.getDate()).slice(-2)
   );
+}
+
+// The backup text: "Gym Comeback backup · Mirza · 2026-11-14" then the data.
+function backupText() {
+  var data = JSON.parse(JSON.stringify(st));
+  if (NICK) data.nick = NICK;
+  return (
+    "Gym Comeback backup · " + (NICK ? NICK + " · " : "") + isoDay() + "\n" + JSON.stringify(data)
+  );
+}
+
+// Short fingerprint of the logs, to know if anything changed since the
+// last backup.
+function logSig() {
+  var s = JSON.stringify(st) + "|" + NICK,
+    h = 5381;
+  for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return String(h >>> 0);
+}
+function changedSinceBackup() {
+  return logSig() != lsStr("gcBackupSig");
 }
 
 // Facts about a backup: number of ticked sets and the latest workout date.
@@ -68,18 +98,15 @@ function backupStatus() {
   if (!el) return;
   var last = lsGet("gcLastBackup");
   el.textContent =
-    "Last backup file: " +
+    "Last backup: " +
     ago(last) +
-    ". Save one after your workouts and keep it in Google Drive or your phone's files.";
-  if (navigator.storage && navigator.storage.persisted)
-    navigator.storage.persisted().then(
-      function (p) {
-        el.textContent += p
-          ? " This browser has agreed to keep the app's data."
-          : " This browser hasn't promised to keep the app's data, so backup files matter even more.";
-      },
-      function () {},
-    );
+    "." +
+    (last
+      ? changedSinceBackup()
+        ? " Something has changed since then."
+        : " Nothing has changed since then."
+      : "") +
+    " Tap Copy backup and paste it over your previous backup note.";
 }
 
 function backupMsg(t) {
@@ -89,54 +116,82 @@ function backupMsg(t) {
 
 function backupDone(how) {
   lsSet("gcLastBackup", Date.now());
+  lsSet("gcBackupSig", logSig());
   backupStatus();
   bkNudge();
   backupMsg(how);
 }
 
-function downloadBackup(text, name) {
-  var url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
-  var a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(function () {
-    URL.revokeObjectURL(url);
-  }, 5000);
-  backupDone("Saved " + name + " to your phone's Downloads folder.");
+// Copy to the clipboard. The text also goes into the box below, so it can
+// be copied by hand if the phone blocks automatic copying.
+function copyBackup() {
+  var text = backupText(),
+    box = document.getElementById("bk");
+  if (box) box.value = text;
+  function fallback() {
+    var ok = false;
+    try {
+      box.focus();
+      box.select();
+      ok = document.execCommand("copy");
+    } catch (e) {}
+    if (ok) backupDone("Copied. Paste it over your previous backup note.");
+    else
+      backupMsg(
+        "Couldn't copy automatically. The backup is in the box below: select it all and copy it.",
+      );
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText)
+    navigator.clipboard.writeText(text).then(function () {
+      backupDone("Copied. Paste it over your previous backup note.");
+    }, fallback);
+  else fallback();
 }
 
-function saveBackup() {
-  var text = JSON.stringify(st),
-    name = backupName(),
+// "Move to a new phone": one file, shared or downloaded.
+function exportFile() {
+  var text = backupText(),
+    name = "gym-comeback-move-" + isoDay() + ".txt",
     file = null;
+  function download() {
+    var url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+    }, 5000);
+    backupDone(
+      "Saved " +
+        name +
+        " to Downloads. Send it to your new phone, then use Restore from file there.",
+    );
+  }
   try {
     file = new File([text], name, { type: "text/plain" });
   } catch (e) {}
-  if (file && navigator.canShare && navigator.share && navigator.canShare({ files: [file] })) {
-    navigator.share({ files: [file], title: "Gym Comeback backup" }).then(
+  if (file && navigator.canShare && navigator.share && navigator.canShare({ files: [file] }))
+    navigator.share({ files: [file], title: "Gym Comeback: move to a new phone" }).then(
       function () {
-        backupDone("Backup shared. Pick Google Drive (or Files) to keep it safe.");
+        backupDone("File sent. On the new phone, open the app and tap Restore from file.");
       },
       function (err) {
         if (err && err.name == "AbortError")
-          backupMsg("Not saved. Tap Save backup file again when ready.");
-        else downloadBackup(text, name);
+          backupMsg("Not exported. Tap Export file again when ready.");
+        else download();
       },
     );
-  } else downloadBackup(text, name);
+  else download();
 }
 
 function restoreFile(file) {
   if (!file) return;
   var r = new FileReader();
   r.onload = function () {
-    var o = null;
-    try {
-      o = JSON.parse(r.result);
-    } catch (e) {}
+    var o = parseBackupText(r.result);
     if (!o || typeof o != "object" || Array.isArray(o)) {
       backupMsg("That file isn't a Gym Comeback backup.");
       return;
@@ -187,34 +242,41 @@ function showUndo() {
   m.appendChild(b);
 }
 
-// Reminder on the Workout page: after a checked-out workout that isn't in a
-// backup yet, or when the last backup is more than a week old.
+// Monthly reminder on the Workout page, only if something changed since the
+// last backup. "Not now" waits another month.
 function bkNudge() {
+  backupStatus(); // keep "changed since then" up to date
   var n = document.getElementById("bknudge");
   if (!n) return;
   var last = lsGet("gcLastBackup"),
     off = lsGet("gcNudgeOff"),
-    now = Date.now(),
-    co = 0;
-  for (var k in st) if (/^\d+-\d+-co$/.test(k) && st[k] && st[k].v > co) co = st[k].v;
-  var afterWorkout = co > last && co > off;
-  var stale = now - Math.max(last, off) > 7 * DAY;
-  var show = hasData() && (afterWorkout || stale);
+    due = Date.now() - Math.max(last, off) >= 30 * DAY;
+  var show = hasData() && changedSinceBackup() && due;
   n.hidden = !show;
-  if (!show) return;
+  if (!show) {
+    n.dataset.k = "";
+    return;
+  }
+  // Only redraw when the message changes, so a tap on the buttons is never
+  // lost to a redraw (e.g. right after typing a number).
+  var key = last ? "m" + ago(last) : "first";
+  if (n.dataset.k == key) return;
+  n.dataset.k = key;
   n.innerHTML = "";
   var t = document.createElement("p");
   t.style.margin = "0 0 8px";
-  t.innerHTML = afterWorkout
-    ? "<b>💾 Workout saved on this phone.</b> Save a backup copy too?"
-    : "<b>💾 Time for a backup.</b> Your last backup file was " + ago(last) + ".";
+  t.innerHTML = last
+    ? "<b>💾 Time for your monthly backup.</b> Your logs changed since your last one (" +
+      ago(last) +
+      ")."
+    : "<b>💾 Time for your first backup.</b> Copy it into a note so your history is safe.";
   n.appendChild(t);
   var r = document.createElement("div");
   r.className = "row";
   var a = document.createElement("button");
   a.className = "pill on";
-  a.textContent = "Save backup file";
-  a.onclick = saveBackup;
+  a.textContent = "Copy backup";
+  a.onclick = copyBackup;
   var b = document.createElement("button");
   b.className = "pill";
   b.textContent = "Not now";
@@ -227,7 +289,49 @@ function bkNudge() {
   n.appendChild(r);
 }
 
-document.getElementById("bksave").onclick = saveBackup;
+// One-time, optional nickname question on the Workout page.
+function nickAsk() {
+  var box = document.getElementById("nickask");
+  if (!box) return;
+  box.innerHTML = "";
+  if (lsStr("gcNickAsked") || NICK) return;
+  var c = document.createElement("div");
+  c.className = "card nickcard";
+  c.innerHTML =
+    "<label class='nicklab' for='nickin'><b>What should we call you?</b> Optional. It shows on your progress, reports and rival lines.</label>";
+  var i = document.createElement("input");
+  i.type = "text";
+  i.id = "nickin";
+  i.maxLength = 20;
+  i.autocomplete = "nickname";
+  i.placeholder = "Nickname";
+  c.appendChild(i);
+  var r = document.createElement("div");
+  r.className = "row";
+  var ok = document.createElement("button");
+  ok.className = "pill on";
+  ok.textContent = "Save";
+  ok.onclick = function () {
+    setNick(i.value);
+    lsSet("gcNickAsked", "1");
+    nickAsk();
+    render();
+  };
+  var no = document.createElement("button");
+  no.className = "pill";
+  no.textContent = "Skip";
+  no.onclick = function () {
+    lsSet("gcNickAsked", "1");
+    nickAsk();
+  };
+  r.appendChild(ok);
+  r.appendChild(no);
+  c.appendChild(r);
+  box.appendChild(c);
+}
+
+document.getElementById("bkx").onclick = copyBackup;
+document.getElementById("bkexport").onclick = exportFile;
 document.getElementById("bkload").onclick = function () {
   var f = document.getElementById("bkfile");
   f.value = "";
@@ -239,3 +343,4 @@ document.getElementById("bkfile").onchange = function (ev) {
 };
 backupStatus();
 bkNudge();
+nickAsk();

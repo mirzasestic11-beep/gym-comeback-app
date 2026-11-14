@@ -12,7 +12,7 @@
 // When you add a new file to the app, add it to FILES below.
 // Changing VERSION makes phones throw away the old saved copy.
 
-var VERSION = "gc-v11";
+var VERSION = "gc-v12";
 var FILES = [
   "./",
   "index.html",

@@ -294,6 +294,11 @@ function bestSet(stats, unit) {
 
 function progress() {
   if (PD == null) PD = D;
+  var pt = document.getElementById("ptitle");
+  if (pt) {
+    pt.textContent = NICK ? NICK + "’s progress" : "";
+    pt.hidden = !NICK;
+  }
   var pd = document.getElementById("pdays");
   pd.innerHTML = "";
   DAYS.forEach(function (d, i) {

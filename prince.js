@@ -53,11 +53,15 @@ function rivalText(id, si, v) {
     });
   var lk = parseFloat(ref.kg) || 0,
     lr = parseFloat(ref.r) || 0;
-  var who = lt.w == W - 1 ? "last week’s you." : "week " + (lt.w + 1) + "’s you.";
-  if (kg > lk) return "+" + Math.round((kg - lk) * 10) / 10 + " kg on " + who;
+  var who = lt.w == W - 1 ? "last week’s " : "week " + (lt.w + 1) + "’s ";
+  // With a nickname: "Mirza beat last week's Mirza (+5 kg)."
+  var say = function (gain) {
+    return NICK ? NICK + " beat " + who + NICK + " (" + gain + ")." : gain + " on " + who + "you.";
+  };
+  if (kg > lk) return say("+" + Math.round((kg - lk) * 10) / 10 + " kg");
   if (kg == lk && r > lr) {
     var n = Math.round(r - lr);
-    return "+" + n + " rep" + (n == 1 ? "" : "s") + " on " + who;
+    return say("+" + n + " rep" + (n == 1 ? "" : "s"));
   }
   return "";
 }

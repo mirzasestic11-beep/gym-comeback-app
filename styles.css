@@ -2363,3 +2363,83 @@ body.pr {
   padding-right: 2px;
   font-size: 0.875rem;
 }
+
+/* =====================================================================
+   BACKUP (copy/paste) + NICKNAME. Text >= 14px in rem, tap targets >= 48px.
+   ===================================================================== */
+#bkcard .small,
+#bkcard p,
+#bkcard label {
+  font-size: 0.875rem;
+}
+#bkcard .bkmain {
+  width: 100%;
+  margin-top: 4px;
+}
+#bkcard .bklab {
+  display: block;
+  margin: 12px 0 4px;
+  color: var(--tx);
+}
+#bkcard textarea {
+  min-height: 48px;
+  font-size: 0.875rem;
+}
+#bkcard #bkmsg {
+  margin: 8px 0 0;
+  min-height: 1.2em;
+  color: var(--tx);
+}
+#bkcard #bkundo {
+  min-height: 48px;
+}
+#bknudge p {
+  font-size: 0.9375rem;
+}
+.ptitle {
+  margin: 4px 0 8px;
+  font-size: 1.375rem;
+}
+.pr .ptitle {
+  font-family: "Russo One", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gold);
+}
+.nickcard .nicklab {
+  display: block;
+  font-size: 0.9375rem;
+  color: var(--tx);
+}
+.nickcard input {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin: 10px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--tx);
+  font: inherit;
+  font-size: 1rem;
+}
+.ycard input[type="text"] {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--tx);
+  font: inherit;
+  font-size: 1rem;
+}
+.pr .nickcard input,
+.pr .ycard input[type="text"] {
+  border-radius: 0;
+  background: #060d27;
+  color: #fff;
+}

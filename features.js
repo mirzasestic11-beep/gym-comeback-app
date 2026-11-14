@@ -425,6 +425,44 @@ function youPage() {
   if (!L) return;
   L.innerHTML = "";
 
+  // --- settings: nickname (only on this phone, included in backups)
+  var c0 = fx("div", "card ycard");
+  c0.appendChild(fx("h3", "", "Nickname"));
+  c0.appendChild(
+    fx(
+      "p",
+      "small",
+      "Optional. Shown on your progress, workout reports and rival lines. Stored only on this phone and included in your backups.",
+    ),
+  );
+  var nl = fx("label", "ylab", "Your nickname");
+  var ni = document.createElement("input");
+  ni.type = "text";
+  ni.maxLength = 20;
+  ni.value = NICK;
+  ni.placeholder = "e.g. Mirza";
+  ni.autocomplete = "nickname";
+  nl.appendChild(ni);
+  c0.appendChild(nl);
+  var nmsg = fx("p", "small ymsg");
+  nmsg.setAttribute("role", "status");
+  c0.appendChild(
+    fxBtn(
+      "Save nickname",
+      function () {
+        setNick(ni.value);
+        lsSet("gcNickAsked", "1");
+        render();
+        youPage();
+        var m = document.querySelector("#ylist .ymsg");
+        if (m) m.textContent = NICK ? "Saved. Hi, " + NICK + "!" : "Nickname removed.";
+      },
+      "on ywide",
+    ),
+  );
+  c0.appendChild(nmsg);
+  L.appendChild(c0);
+
   // --- gym days + reminder
   var s = sched();
   var c1 = fx("div", "card ycard");

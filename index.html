@@ -68,6 +68,7 @@
 <div class="pills" id="days"></div>
 <div class="warn" id="rule"></div>
 <div id="rec"></div>
+<div id="nickask"></div>
 <div id="featban"></div>
 <div class="card" id="clock"></div>
 <div class="bar"><i id="fill"></i></div>
@@ -80,6 +81,7 @@
 <textarea id="note" rows="2" placeholder="Notes (e.g. leg press 50 kg felt easy)" style="margin-top:8px"></textarea></div>
 </div>
 <div id="progressView" hidden>
+<h2 class="ptitle" id="ptitle" hidden></h2>
 <p class="sub">Your ticked sets, week by week. Tap a dot to see the exact number.</p>
 <div class="pills" id="pdays"></div>
 <div id="plist"></div>
@@ -99,11 +101,16 @@
 </div>
 <div class="card" id="bkcard"><b>Backup</b>
 <p class="small" id="bkstat" style="margin:4px 0 8px"></p>
-<div class="row"><button class="pill on" id="bksave">Save backup file</button><button class="pill" id="bkload">Restore from file</button></div>
-<input type="file" id="bkfile" accept=".txt,.json,text/plain,application/json" hidden>
+<button class="pill on bkmain" id="bkx">Copy backup</button>
 <p class="small" id="bkmsg" role="status"></p>
-<details style="margin-top:6px"><summary class="small">Copy and paste instead</summary>
-<p class="small" style="margin:4px 0 8px">Tap Show my backup and copy the text to keep your logs. Paste it back here and tap Restore to move them to a new place.</p><textarea id="bk" rows="3"></textarea><div class="row" style="margin-top:8px"><button class="pill" id="bkx">Show my backup</button><button class="pill" id="bki">Restore</button></div></details></div>
+<label class="small bklab" for="bk">Restore from text: paste your backup here</label>
+<textarea id="bk" rows="3" placeholder="Gym Comeback backup · ..."></textarea>
+<button class="pill bkmain" id="bki" style="margin-top:8px">Restore from text</button>
+<details id="bkmove" style="margin-top:10px"><summary>Move to a new phone</summary>
+<p class="small" style="margin:6px 0 8px">Only for changing phones. On this phone, tap <b>Export file</b> and send the file to your new phone (Bluetooth, a USB cable or any app you like). On the new phone, open the app and tap <b>Restore from file</b>.</p>
+<div class="row"><button class="pill" id="bkexport">Export file</button><button class="pill" id="bkload">Restore from file</button></div>
+<input type="file" id="bkfile" accept=".txt,.json,text/plain,application/json" hidden>
+</details></div>
 <p class="small">Not medical advice. If the wrist hurts sharply or keeps getting worse, stop and see a doctor or physio.</p>
 </main>
 <div id="rest" hidden></div>

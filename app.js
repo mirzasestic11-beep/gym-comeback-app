@@ -20,6 +20,40 @@ try {
   st = JSON.parse(localStorage.getItem("gc") || "{}");
 } catch (e) {}
 
+// ---- Nickname (optional) ----------------------------------------------------
+// Kept only on this phone (localStorage "gcNick", max 20 characters) and
+// added to backups as "nick", so it comes back when you restore.
+var NICK = "";
+try {
+  NICK = (localStorage.getItem("gcNick") || "").slice(0, 20);
+} catch (e) {}
+function setNick(v) {
+  NICK = String(v == null ? "" : v)
+    .replace(/[<>]/g, "")
+    .trim()
+    .slice(0, 20);
+  try {
+    if (NICK) localStorage.setItem("gcNick", NICK);
+    else localStorage.removeItem("gcNick");
+  } catch (e) {}
+}
+// Backup text = a header line with nickname and date, then the data.
+// Accepts that format AND old backups that are only the data.
+function parseBackupText(t) {
+  t = String(t == null ? "" : t).trim();
+  try {
+    return JSON.parse(t);
+  } catch (e) {}
+  var i = t.indexOf("{"),
+    j = t.lastIndexOf("}");
+  if (i > -1 && j > i) {
+    try {
+      return JSON.parse(t.slice(i, j + 1));
+    } catch (e) {}
+  }
+  return null;
+}
+
 // ---- Upgrading old logs to exercise IDs -------------------------------------
 // Old versions saved logs by exercise POSITION ("0-1-2-0" = week 1, Day 2,
 // 3rd exercise, set 1). Now logs are saved by exercise ID
@@ -112,6 +146,8 @@ function save() {
   try {
     localStorage.setItem("gc", JSON.stringify(st));
   } catch (e) {}
+  // keep the backup status and monthly reminder up to date (backup.js)
+  if (typeof bkNudge == "function") bkNudge();
 }
 function k(a) {
   return W + "-" + D + "-" + a;
@@ -678,8 +714,10 @@ function report() {
   var h =
     "<div class='rep'><div class='rh'>" +
     (PR
-      ? "<div class='beam'></div><div class='k'>Workout complete</div><h3>Final blow landed</h3>"
-      : "<h3>Workout complete 💪</h3>") +
+      ? "<div class='beam'></div><div class='k'>Workout complete</div><h3>Final blow landed" +
+        (NICK ? ", " + esc(NICK) : "") +
+        "</h3>"
+      : "<h3>Workout complete" + (NICK ? ", " + esc(NICK) : "") + " 💪</h3>") +
     "<div>Week " +
     (W + 1) +
     " · " +
@@ -983,19 +1021,15 @@ function render() {
   if (typeof featRender == "function") featRender();
   first = false;
 }
-document.getElementById("bkx").onclick = function () {
-  var t = document.getElementById("bk");
-  t.value = JSON.stringify(st);
-  t.select();
-  try {
-    document.execCommand("copy");
-  } catch (e) {}
-};
 // Restore a backup object (from the text box or a backup file).
 // Before replacing anything, the current data is kept in "gcBeforeRestore"
 // so a mistaken restore can be undone. Returns true if it worked.
 function restoreFrom(o) {
   if (!o || typeof o != "object" || Array.isArray(o)) return false;
+  if (typeof o.nick == "string") {
+    if (o.nick.trim()) setNick(o.nick);
+    delete o.nick;
+  }
   try {
     localStorage.setItem("gcBeforeRestore", JSON.stringify(st));
   } catch (e) {}
@@ -1016,11 +1050,9 @@ function restoreFrom(o) {
   return true;
 }
 document.getElementById("bki").onclick = function () {
-  var o = null;
-  try {
-    o = JSON.parse(document.getElementById("bk").value);
-  } catch (e) {}
+  var o = parseBackupText(document.getElementById("bk").value);
   if (!restoreFrom(o)) alert("That text is not a valid backup.");
+  else if (window.backupMsg) backupMsg("Backup restored.");
 };
 applyEF();
 document.getElementById("ef").onclick = function () {
